@@ -1,0 +1,9 @@
+[submodule "lib/eigen"]
+	path = lib/eigen
+	url = git@gitlab.com:libeigen/eigen.git
+[submodule "lib/fast_matrix_market"]
+	path = lib/fast_matrix_market
+	url = git@github.com:alugowski/fast_matrix_market.git
+[submodule "lib/suitesparse"]
+	path = lib/suitesparse
+	url = git@github.com:DrTimothyAldenDavis/SuiteSparse.git
