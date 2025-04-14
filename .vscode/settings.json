@@ -77,8 +77,8 @@
   },
   "makefile.launchConfigurations": [
     {
-      "cwd": "/Users/damianopellegrini/Developer/mcs-project-cpp/target",
-      "binaryPath": "/Users/damianopellegrini/Developer/mcs-project-cpp/target/main",
+      "cwd": "${workspaceDir}/target",
+      "binaryPath": "${workspaceDir}/target/main",
       "binaryArgs": []
     }
   ],

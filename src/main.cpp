@@ -19,7 +19,7 @@ int main(int argc, char* argv[], char** envp) {
   std::cerr << "Eigen CPU vectorization is enabled." << std::endl;
 #endif
 
-  return solveMatrixMarket("matrices/StocF-1465.mtx"sv);
+  return solveMatrixMarket("matrices/Flan_1565.mtx"sv);
 }
 
 int solveMatrixMarket(const std::string_view& path) {
