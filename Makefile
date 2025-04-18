@@ -55,14 +55,18 @@ endif
 ifeq ($(DETECTED_OS), Darwin)
 CXXFLAGS += -I$(shell brew --prefix libomp)/include -D_OPENMP
 LDFLAGS += \
-	$(LIB_DIR)/lapack/liblapack.a \
-	$(LIB_DIR)/lapack/librefblas.a \
 	-L$(shell brew --prefix libomp)/lib \
 	-framework Accelerate \
-	-lgfortran \
 	-lomp
 else
 LDFLAGS += -fopenmp
+endif
+
+ifneq ($(DETECTED_OS), Darwin)
+LDFLAGS += \
+	$(LIB_DIR)/lapack/liblapack.a \
+	$(LIB_DIR)/lapack/librefblas.a \
+	-lgfortran
 endif
 
 # or
