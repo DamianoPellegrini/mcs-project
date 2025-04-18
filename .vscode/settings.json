@@ -114,7 +114,8 @@
     "xtree": "cpp",
     "xutility": "cpp",
     "codecvt": "cpp",
-    "span": "cpp"
+    "span": "cpp",
+    "core": "cpp"
   },
   "makefile.launchConfigurations": [
     {

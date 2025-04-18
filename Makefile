@@ -1,18 +1,3 @@
-ifeq ($(OS), Windows_NT)
-DETECTED_OS = Windows
-else
-DETECTED_OS = $(shell uname)
-endif
-
-ifeq ($(DETECTED_OS), Windows)
-LDFLAGS += -fopenmp
-endif
-ifeq ($(DETECTED_OS), Darwin)
-LDFLAGS += -framework Accelerate
-else
-LDFLAGS += -fopenmp
-endif
-
 CXX = g++
 CXXFLAGS += -Wall -std=c++20 -march=native
 
@@ -27,7 +12,7 @@ SUITESPARSE_BUILD = $(LIB_DIR)/suitesparse/lib/libcholmod.a \
 					$(LIB_DIR)/suitesparse/lib/libamd.a \
 					$(LIB_DIR)/suitesparse/lib/libcamd.a \
 					$(LIB_DIR)/suitesparse/lib/libcolamd.a \
-					$(LIB_DIR)/suitesparse/lib/libccolamd.a \
+					$(LIB_DIR)/suitesparse/lib/libccolamd.a
 
 LAPACK_BUILD = $(LIB_DIR)/lapack/liblapack.a
 
@@ -58,11 +43,26 @@ LDFLAGS += \
 	$(LIB_DIR)/suitesparse/lib/libccolamd.a \
 	$(LIB_DIR)/lapack/liblapacke.a
 
-ifneq ($(DETECTED_OS), Darwin)
+	ifeq ($(OS), Windows_NT)
+DETECTED_OS = Windows
+else
+DETECTED_OS = $(shell uname)
+endif
+
+ifeq ($(DETECTED_OS), Windows)
+LDFLAGS += -fopenmp
+endif
+ifeq ($(DETECTED_OS), Darwin)
+CXXFLAGS += -I$(shell brew --prefix libomp)/include -D_OPENMP
 LDFLAGS += \
 	$(LIB_DIR)/lapack/liblapack.a \
 	$(LIB_DIR)/lapack/librefblas.a \
-	-lgfortran
+	-L$(shell brew --prefix libomp)/lib \
+	-framework Accelerate \
+	-lgfortran \
+	-lomp
+else
+LDFLAGS += -fopenmp
 endif
 
 # or
