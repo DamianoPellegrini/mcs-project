@@ -3,6 +3,7 @@
 #include <chrono>
 #include <fast_matrix_market/app/Eigen.hpp>
 #include <Eigen/SparseCore>
+#include <filesystem>
 // #include <Eigen/SparseCholesky>
 #include <Eigen/CholmodSupport>
 
@@ -11,21 +12,41 @@ constexpr auto OUT_FILE = "bench.csv";
 
 using namespace std::string_view_literals;
 
-int solveMatrixMarket(const std::string_view&);
+int solveMatrixMarket(const std::filesystem::path& path);
 
 int main(int argc, char* argv[], char** envp) {
 
 #ifdef EIGEN_VECTORIZE
   std::cerr << "Eigen CPU vectorization is enabled." << std::endl;
 #endif
+  Eigen::setNbThreads(0);
+  std::cerr << "Eigen Num of Threads: " << Eigen::nbThreads() << std::endl;
 
-  return solveMatrixMarket("matrices/Flan_1565.mtx"sv);
+  const std::filesystem::path matrices_dir = "matrices";
+
+  // Loop through all files in the directory
+  for (const auto& entry : std::filesystem::directory_iterator(matrices_dir)) {
+    if (entry.is_regular_file() && entry.path().extension() == ".mtx") {
+      const auto matrixName { entry.path().stem().string() };
+
+      std::cerr << "Processing " << matrixName << "..." << std::endl;
+      
+      int result = solveMatrixMarket(entry.path());
+      if (result == 0) {
+        std::cerr << "Processed " << matrixName << "..." << std::endl;
+      } else {
+        std::cerr << "Error " << matrixName << "..." << std::endl;
+      }
+    }
+  }
+
+  return 0;
 }
 
-int solveMatrixMarket(const std::string_view& path) {
+int solveMatrixMarket(const std::filesystem::path& path) {
   const auto timestamp = std::chrono::system_clock::now();
 
-  std::ifstream matrix_file(path.data(), std::ios::in);
+  std::ifstream matrix_file(path, std::ios::in);
   std::ofstream csv_file(OUT_FILE, std::ios::ate | std::ios::app);
 
   if (std::filesystem::is_empty(OUT_FILE)) {
@@ -41,7 +62,7 @@ int solveMatrixMarket(const std::string_view& path) {
   auto end{ std::chrono::high_resolution_clock::now() };
   matrix_file.close();
 
-  csv_file << std::format("{},{},{},{},{},", timestamp, path, A.rows(), A.cols(), A.nonZeros());
+  csv_file << std::format("{}, {}, {}, {}, {}, ", timestamp, path.stem().string(), A.rows(), A.cols(), A.nonZeros());
 
   const auto loadTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
   const auto loadMem = 0;
