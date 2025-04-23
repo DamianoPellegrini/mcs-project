@@ -7,6 +7,3 @@
 [submodule "lib/suitesparse"]
 	path = lib/suitesparse
 	url = https://github.com/DrTimothyAldenDavis/SuiteSparse.git
-[submodule "lib/lapack"]
-	path = lib/lapack
-	url = https://github.com/Reference-LAPACK/lapack.git
