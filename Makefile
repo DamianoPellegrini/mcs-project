@@ -57,10 +57,9 @@ LDFLAGS += \
 ifeq ($(DETECTED_OS), Darwin)
 CXXFLAGS += -I$(shell brew --prefix libomp)/include -D_OPENMP
 LDFLAGS += \
-	-L$(shell brew --prefix libomp)/lib \
+	-L$(shell brew --prefix libomp)/lib -lomp \
 	-framework Accelerate \
-	-lgfortran \
-	-lomp
+	# -L$(shell brew --prefix lapack)/lib -llapacke -lblas -llapack
 else
 LDFLAGS += -fopenmp -Wl,--start-group -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group -liomp5 -lpthread -lm -ldl
 endif
