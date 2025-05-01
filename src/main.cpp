@@ -13,19 +13,28 @@
 #ifdef OPEN_BLAS
 #include <cblas.h>
 #endif
+#ifdef USING_ACCEL
+#include <Accelerate/Accelerate.h>
+#endif
 
-typedef Eigen::SparseMatrix<double, Eigen::ColMajor, SuiteSparse_long> SparseMatrix;
+typedef Eigen::SparseMatrix<double, Eigen::ColMajor, int64_t> SparseMatrix;
 
 #ifdef EIGEN_USE_MKL_ALL
 constexpr auto BLAS = "MKL";
 #elif defined(OPEN_BLAS)
 constexpr auto BLAS = "OpenBLAS";
+#elif defined(USING_ACCEL)
+constexpr auto BLAS = "Accelerate";
 #else
 constexpr auto BLAS = "Unknown";
 #endif
 
 constexpr auto HEADER_CSV = "os, blas, # threads, timestamp, matrixname, rows, cols, nonZeros, loadTime, loadMem, decompTime, decompMem, solveTime, solveMem, error"; 
 constexpr auto OUT_FILE = "bench.csv";
+
+#ifndef USING_ACCEL
+constexpr std::chrono::seconds SLEEP_TIME{5};
+#endif
 
 const std::string getOSName();
 
@@ -54,8 +63,10 @@ int main(int argc, char* argv[], char** envp) {
       const auto matrixName { entry.path().stem().string() };
 
       // Sleep for 10 seconds before processing the next file
-      std::cerr << "Sleeping for 10 seconds..." << std::endl;
-      std::this_thread::sleep_for(std::chrono::seconds(10));
+      #ifndef USING_ACCEL
+      std::cerr << std::format("Sleeping for {} seconds...", SLEEP_TIME) << std::endl;
+      std::this_thread::sleep_for(SLEEP_TIME);
+      #endif
 
       int result = solveMatrixMarket(entry.path());
       if (result == 0) {
@@ -88,6 +99,8 @@ const int getNumThreads() {
     return mkl_get_max_threads();
   #elif defined(OPEN_BLAS)
     return openblas_get_num_threads();
+  #elif defined(USING_ACCEL)
+    return BLASGetThreading() == BLAS_THREADING_SINGLE_THREADED ? 1 : -1;
   #else
     return -1;
   #endif

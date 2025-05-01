@@ -5,13 +5,15 @@
 if [ "$(uname)" == "Darwin" ]; then
     # macOS
     BUILD_DIR="build_macos"
-    EXECUTABLE_SUFFIX="accelerate_macos"
+    EXE_BLAS="accelerate"
+    EXE_SUFFIX="macos"
     BLAS="Accelerate"
     echo "Detected macOS system"
 elif [ "$(uname)" == "Linux" ]; then
     # Linux
     BUILD_DIR="build_linux"
-    EXECUTABLE_SUFFIX="mkl_linux"
+    EXE_BLAS="mkl"
+    EXE_SUFFIX="linux"
     BLAS="MKL"
     # Get Intel oneAPI path from command line or use default
     if [ -z "$1" ]; then
@@ -58,13 +60,13 @@ export LD_LIBRARY_PATH="$PWD/cmake/openblas/lib:$LD_LIBRARY_PATH"
 echo "Waiting 5 seconds before running $BLAS version..."
 sleep 5
 echo "Running $BLAS version..."
-./target/main_$EXECUTABLE_SUFFIX
+./target/main_${EXE_BLAS}_${EXE_SUFFIX}
 
 # Run the OpenBLAS version
 echo "Waiting 5 seconds before running OpenBLAS version..."
 sleep 5
 echo "Running OpenBLAS version..."
-./target/main_openblas_linux
+./target/main_openblas_${EXE_SUFFIX}
 
 echo "Done!"
 

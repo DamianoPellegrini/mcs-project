@@ -104,7 +104,23 @@ function(suitesparse_main)
     )
 
     if(APPLE) 
-        list(APPEND SUITESPARSE_CMAKE_OPTIONS -DBLA_VENDOR=Apple)
+        list(APPEND SUITESPARSE_CMAKE_OPTIONS -DBLA_VENDOR=Apple -DSUITESPARSE_USE_64BIT_BLAS=OFF)
+        execute_process(
+            COMMAND brew --prefix libomp
+            OUTPUT_VARIABLE LIBOMP_PREFIX
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        message (STATUS "OpenMP prefix location " ${LIBOMP_PREFIX})
+        list(APPEND SUITESPARSE_CMAKE_OPTIONS
+            -DBLA_VENDOR=Apple
+            -DSUITESPARSE_USE_64BIT_BLAS=OFF
+            -DOpenMP_FOUND=TRUE
+            -DOpenMP_C_FOUND=C
+            -DOpenMP_C_FLAGS="-lomp"
+            -DOpenMP_C_INCLUDE_DIRS=${LIBOMP_PREFIX}/include
+            -DOpenMP_C_LIBRARIES=${LIBOMP_PREFIX}/lib
+            -DOpenMP_C_LIB_NAMES=libomp
+            -DOpenMP_libomp_LIBRARY=${LIBOMP_PREFIX}/lib/libomp.a)
     else()
         list(APPEND SUITESPARSE_CMAKE_OPTIONS -DBLA_VENDOR=Intel10_64ilp)
     endif()
@@ -151,6 +167,33 @@ function(suitesparse_openblas)
             -DBLAS_LIBRARIES=${OPENBLAS_DIR}/lib/libopenblas.lib
             -DLAPACK_LIBRARIES=${OPENBLAS_DIR}/lib/libopenblas.lib
         )
+    elseif(APPLE)
+        execute_process(
+            COMMAND brew --prefix openblas
+            OUTPUT_VARIABLE OPENBLAS_DIR
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        list(APPEND SUITESPARSE_CMAKE_OPTIONS
+            -DSUITESPARSE_USE_64BIT_BLAS=OFF
+            -DBLAS_LIBRARIES=${OPENBLAS_DIR}/lib/libopenblas.a
+            -DLAPACK_LIBRARIES=${OPENBLAS_DIR}/lib/libopenblas.a
+        )
+        execute_process(
+            COMMAND brew --prefix libomp
+            OUTPUT_VARIABLE LIBOMP_PREFIX
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        message (STATUS "OpenMP prefix location " ${LIBOMP_PREFIX})
+        list(APPEND SUITESPARSE_CMAKE_OPTIONS
+            -DBLA_VENDOR=Apple
+            -DSUITESPARSE_USE_64BIT_BLAS=OFF
+            -DOpenMP_FOUND=TRUE
+            -DOpenMP_C_FOUND=C
+            -DOpenMP_C_FLAGS="-lomp"
+            -DOpenMP_C_INCLUDE_DIRS=${LIBOMP_PREFIX}/include
+            -DOpenMP_C_LIBRARIES=${LIBOMP_PREFIX}/lib
+            -DOpenMP_C_LIB_NAMES=libomp
+            -DOpenMP_libomp_LIBRARY=${LIBOMP_PREFIX}/lib/libomp.a)
     endif()
 
     message(STATUS "SUITESPARSE_CMAKE_OPTIONS: ${SUITESPARSE_CMAKE_OPTIONS}")
@@ -237,17 +280,16 @@ target_link_libraries(main_openblas PRIVATE
 set(INCLUDES
     ${LIB_DIR}/eigen
     ${LIB_DIR}/fast_matrix_market/include
-    ${SUITESPARSE_DIR}/include/suitesparse
 )
 # Add include directories
-target_include_directories(main PRIVATE ${INCLUDES})
-target_include_directories(main_openblas PRIVATE ${INCLUDES})
+target_include_directories(main PRIVATE ${INCLUDES} ${SUITESPARSE_MAIN_INSTALL_DIR}/include/suitesparse)
+target_include_directories(main_openblas PRIVATE ${INCLUDES} ${SUITESPARSE_OPENBLAS_INSTALL_DIR}/include/suitesparse)
 
 set(COMPILER_FLAGS "")
 
-# Set up compiler flags
+# Set up compiler flags for target main
 if(MSVC)
-    list(APPEND COMPILER_FLAGS /external:W0 /W4 /EHsc /O2)
+    list(APPEND COMPILER_FLAGS /external:W0 /W4 /EHsc /O3)
 
     # MKL setup for Windows
     target_compile_definitions(main PRIVATE -DEIGEN_USE_MKL_ALL -DMKL_ILP64)
@@ -262,22 +304,25 @@ if(MSVC)
         libiomp5md.lib
     )
 else()
-    list(APPEND COMPILER_FLAGS -Wall -march=native -O2)
+    list(APPEND COMPILER_FLAGS -Wall -march=native -O3)
 
     if(APPLE)
-        find_package(OpenMP REQUIRED)
         execute_process(
             COMMAND brew --prefix libomp
             OUTPUT_VARIABLE LIBOMP_PREFIX
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
+        message (STATUS "OpenMP prefix location " ${LIBOMP_PREFIX})
+        target_compile_definitions(main PRIVATE -D_OPENMP -DUSING_ACCEL)
+        # find_package(OpenMP REQUIRED PATHS ${LIBOMP_PREFIX}/lib)
         target_include_directories(main PRIVATE ${LIBOMP_PREFIX}/include)
-        target_compile_definitions(main PRIVATE  -D_OPENMP)
+        # target_compile_definitions(main PRIVATE EIGEN_USE_BLAS EIGEN_USE_LAPACK)
+        target_link_directories(main PRIVATE ${LIBOMP_PREFIX}/lib)
         target_link_libraries(main PRIVATE
             "-framework Accelerate"
-            ${OpenMP_CXX_LIBRARIES}
+            "-lomp"
         )
-    else()
+    else() # here i'm linux
         list(APPEND COMPILER_FLAGS -m64)
         target_compile_definitions(main PRIVATE -DEIGEN_USE_MKL_ALL -DMKL_ILP64)
         
@@ -296,13 +341,27 @@ else()
 endif()
 
 target_compile_definitions(main_openblas PRIVATE -DEIGEN_USE_BLAS -DEIGEN_USE_LAPACK -DOPEN_BLAS)
-target_include_directories(main_openblas PRIVATE ${OPENBLAS_DIR}/include)
+if(APPLE)
+    execute_process(
+        COMMAND brew --prefix openblas
+        OUTPUT_VARIABLE OPENBLAS_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    target_include_directories(main_openblas PRIVATE ${OPENBLAS_DIR}/include)
+    target_link_directories(main_openblas PRIVATE ${OPENBLAS_DIR}/lib)
+else()
+    target_include_directories(main_openblas PRIVATE ${OPENBLAS_DIR}/include)
+endif()
 
 if(WIN32)
     target_link_libraries(main_openblas PRIVATE
         ${OPENBLAS_DIR}/lib/libopenblas.lib
     )
-else()
+elseif(APPLE)
+   target_link_libraries(main_openblas PRIVATE
+       -lopenblas
+   )
+else() # here i'm linux
     target_link_libraries(main_openblas PRIVATE
         -fopenmp
         -lopenblas64
