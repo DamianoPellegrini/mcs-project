@@ -1,219 +1,321 @@
-cmake_minimum_required(VERSION 3.29)
-set(CMAKE_Fortran_COMPILER "C:/Program Files (x86)/Intel/oneAPI/compiler/latest/bin")
+cmake_minimum_required(VERSION 3.28)
 
-project(MultiFolderBuild LANGUAGES C CXX Fortran)
+# OneAPI environment check
+if(NOT APPLE)
+    if(WIN32)
+        set(ONEAPI_SETVARS_PATH "call \"C:/Program Files (x86)/Intel/oneAPI/setvars.bat\"")
+    elseif(UNIX)
+        set(ONEAPI_SETVARS_PATH "source /opt/intel/oneapi/setvars.sh")
+    endif()
+
+    if(WIN32)
+        find_program(CMAKE_Fortran_COMPILER NAMES ifx.exe PATHS $ENV{CMPLR_ROOT}/bin)
+    endif()
+    set(MKL_LINK static)
+    find_package(MKL REQUIRED PATHS $ENV{MKLROOT})
+endif()
+
+project(MCS-Project LANGUAGES C CXX Fortran)
+
+message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 
 # Define directories
 set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 set(LIB_DIR "${CMAKE_SOURCE_DIR}/lib")
-set(OBJ_DIR "${CMAKE_SOURCE_DIR}/target/obj")
 set(BIN_DIR "${CMAKE_SOURCE_DIR}/target")
+
+# Create output directories (these will be created during the build)
+file(MAKE_DIRECTORY ${BIN_DIR})
 
 message(STATUS "Source Directory: ${SRC_DIR}")
 message(STATUS "Library Directory: ${LIB_DIR}")
-message(STATUS "Object Directory: ${OBJ_DIR}")
 message(STATUS "Binary Directory: ${BIN_DIR}")
 
-# Create output directories
-file(MAKE_DIRECTORY ${OBJ_DIR})
-file(MAKE_DIRECTORY ${BIN_DIR})
+# SuiteSparse configuration
+set(SUITESPARSE_DIR "${LIB_DIR}/suitesparse")
 
-# List of SuiteSparse libraries
-set(SUITESPARSE_BUILD
-    ${LIB_DIR}/suitesparse/lib/suitesparseconfig_static.lib
-    ${LIB_DIR}/suitesparse/lib/amd_static.lib
-    ${LIB_DIR}/suitesparse/lib/camd_static.lib
-    ${LIB_DIR}/suitesparse/lib/colamd_static.lib
-    ${LIB_DIR}/suitesparse/lib/ccolamd_static.lib
-    ${LIB_DIR}/suitesparse/lib/cholmod_static.lib
+# Proper clean targets
+add_custom_target(clean-src
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${BASE_OBJ_DIR}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${BIN_DIR}
+    COMMENT "Cleaning object files and main executable"
 )
 
-# Check if SuiteSparse libraries need to be built
-set(BUILD_SUITESPARSE FALSE)
-foreach(LIB ${SUITESPARSE_BUILD})
-    if(EXISTS ${LIB})
-        message(STATUS "Found ${LIB}")
-    else()
-        message(STATUS "Missing ${LIB}, will build SuiteSparse")
-        set(BUILD_SUITESPARSE TRUE)
-        break()
-    endif()
-endforeach()
+add_custom_target(clean-lib
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${BASE_OBJ_DIR}/suitesparse_main-prefix
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${BASE_OBJ_DIR}/suitesparse_openblas-prefix
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${BASE_OBJ_DIR}/suitesparse_main
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${BASE_OBJ_DIR}/suitesparse_openblas
+    COMMENT "Cleaning SuiteSparse libraries"
+)
 
-# Only build SuiteSparse if needed
-if(BUILD_SUITESPARSE)
-    # Define options
-    set(CMAKE_OPTIONS
-        -DBLA_VENDOR=Intel10_64ilp
-        -USUITESPARSE_PKGFILEDIR
-        -DSUITESPARSE_LOCAL_INSTALL=1
-        -DBUILD_SHARED_LIBS=OFF
-        -DBUILD_STATIC_LIBS=ON
-        -DCHOLMOD_PARTITION=OFF
-    )
+add_custom_target(clean-all
+    DEPENDS clean-src clean-lib
+    COMMENT "Cleaning everything (sources and libraries)"
+)
 
-    # List of folders you want to process
-    set(FOLDERS 
-        "lib/suitesparse/SuiteSparse_config"
-        "lib/suitesparse/AMD" 
-        "lib/suitesparse/CAMD"
-        "lib/suitesparse/COLAMD"
-        "lib/suitesparse/CCOLAMD"
-        "lib/suitesparse/CHOLMOD"
-    )
+# Configure library paths based on platform
+set(SUITESPARSE_LIB_NAMES
+    "suitesparseconfig"
+    "amd"
+    "camd"
+    "colamd"
+    "ccolamd"
+    "cholmod"
+)
+ 
+# Copy override files before building
+add_custom_target(copy_override_files ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LIB_DIR}/override/cholmod.h.in"
+    "${SUITESPARSE_DIR}/CHOLMOD/Config/cholmod.h.in"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LIB_DIR}/override/t_cholmod_malloc.c"
+    "${SUITESPARSE_DIR}/CHOLMOD/Utility/t_cholmod_malloc.c"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LIB_DIR}/override/t_cholmod_realloc.c"
+    "${SUITESPARSE_DIR}/CHOLMOD/Utility/t_cholmod_realloc.c"
+    COMMENT "Copying override files to SuiteSparse"
+)
 
-    get_filename_component(PROJECT_ROOT "${CMAKE_CURRENT_LIST_DIR}" ABSOLUTE)
+set(SUITESPARSE_MAIN_INSTALL_DIR ${CMAKE_SOURCE_DIR}/cmake/suitesparse_main)
+set(SUITESPARSE_OPENBLAS_INSTALL_DIR ${CMAKE_SOURCE_DIR}/cmake/suitesparse_openblas)
 
-    foreach(FOLDER IN LISTS FOLDERS)
-        message(STATUS "Processing ${FOLDER}")
+make_directory(${SUITESPARSE_MAIN_INSTALL_DIR})
+make_directory(${SUITESPARSE_OPENBLAS_INSTALL_DIR})
 
-        file(MAKE_DIRECTORY "${PROJECT_ROOT}/${FOLDER}/build")
+set(OPENBLAS_DIR ${CMAKE_SOURCE_DIR}/cmake/openblas)
 
-        # Configure step
-        execute_process(
-            COMMAND ${CMAKE_COMMAND} ${CMAKE_OPTIONS} ..
-            WORKING_DIRECTORY "${PROJECT_ROOT}/${FOLDER}/build"
-            RESULT_VARIABLE result
-        )
-        
-        if(result)
-            message(FATAL_ERROR "Configuration failed in ${FOLDER}")
-        endif()
+include(ExternalProject)
 
-        # Build step
-        execute_process(
-            COMMAND ${CMAKE_COMMAND} --build . --config Release -j8
-            WORKING_DIRECTORY "${PROJECT_ROOT}/${FOLDER}/build"
-            RESULT_VARIABLE result
-        )
-        
-        if(result)
-            message(FATAL_ERROR "Build failed in ${FOLDER}")
-        endif()
+# Set the common CMake options for SuiteSparse
+list(APPEND SUITESPARSE_CMAKE_OPTIONS
+    -DSUITESPARSE_USE_64BIT_BLAS=ON
+    -DSUITESPARSE_LOCAL_INSTALL=1
+    -DBUILD_SHARED_LIBS=OFF
+    -DBUILD_STATIC_LIBS=ON
+    -DSUITESPARSE_ENABLE_PROJECTS=cholmod
+)
 
-        # Install step
-        execute_process(
-            COMMAND ${CMAKE_COMMAND} --install .
-            WORKING_DIRECTORY "${PROJECT_ROOT}/${FOLDER}/build"
-            RESULT_VARIABLE result
-        )
-        
-        if(result)
-            message(FATAL_ERROR "Installation failed in ${FOLDER}")
-        endif()
-        
-        message(STATUS "Successfully built and installed ${FOLDER}")
-    endforeach()
-else()
-    message(STATUS "Skipping SuiteSparse build, all libraries found.")
+if (WIN32)
+    list(APPEND SUITESPARSE_CMAKE_OPTIONS -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER})
 endif()
 
-# Now build the main project
-message(STATUS "Building main project")
+function(suitesparse_main)
+    list(APPEND SUITESPARSE_CMAKE_OPTIONS
+        -DCMAKE_INSTALL_PREFIX=${SUITESPARSE_MAIN_INSTALL_DIR}
+    )
 
-# Find all source files
+    if(APPLE) 
+        list(APPEND SUITESPARSE_CMAKE_OPTIONS -DBLA_VENDOR=Apple)
+    else()
+        list(APPEND SUITESPARSE_CMAKE_OPTIONS -DBLA_VENDOR=Intel10_64ilp)
+    endif()
+
+    if(LINUX)
+        get_target_property(MKL_INTEL_ILP64_PATH MKL::mkl_intel_ilp64 IMPORTED_LOCATION)
+        get_target_property(MKL_INTEL_THREAD_PATH MKL::mkl_intel_thread IMPORTED_LOCATION)
+        get_target_property(MKL_CORE_PATH MKL::mkl_core IMPORTED_LOCATION)
+
+        set(MKL_LIBS "-m64 -Wl,--start-group ${MKL_INTEL_ILP64_PATH} ${MKL_INTEL_THREAD_PATH} ${MKL_CORE_PATH} -Wl,--end-group -liomp5 -lpthread -lm -ldl")     
+    endif()
+
+    message(STATUS "SUITESPARSE_CMAKE_OPTIONS: ${SUITESPARSE_CMAKE_OPTIONS}")
+
+    if(LINUX)
+        ExternalProject_Add(
+            suitesparse_main
+            SOURCE_DIR "${SUITESPARSE_DIR}"
+            CONFIGURE_COMMAND ${CMAKE_COMMAND} -S "${SUITESPARSE_DIR}" -B "${CMAKE_BINARY_DIR}/suitesparse_main" ${SUITESPARSE_CMAKE_OPTIONS} ${SUITESPARSE_CMAKE_OPTIONS} -DBLAS_LIBRARIES=${MKL_LIBS} -DLAPACK_LIBRARIES=${MKL_LIBS}
+            BUILD_COMMAND ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}/suitesparse_main" --config Release
+            INSTALL_COMMAND ${CMAKE_COMMAND} --install ${CMAKE_BINARY_DIR}/suitesparse_main
+        )
+    else()
+        ExternalProject_Add(
+            suitesparse_main
+            SOURCE_DIR "${SUITESPARSE_DIR}"
+            CONFIGURE_COMMAND ${CMAKE_COMMAND} -S "${SUITESPARSE_DIR}" -B "${CMAKE_BINARY_DIR}/suitesparse_main" ${SUITESPARSE_CMAKE_OPTIONS} 
+            BUILD_COMMAND ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}/suitesparse_main" --config Release
+            INSTALL_COMMAND ${CMAKE_COMMAND} --install ${CMAKE_BINARY_DIR}/suitesparse_main
+        )
+    endif()
+endfunction()
+
+suitesparse_main()
+
+function(suitesparse_openblas)
+    list(APPEND SUITESPARSE_CMAKE_OPTIONS
+        -DCMAKE_INSTALL_PREFIX=${SUITESPARSE_OPENBLAS_INSTALL_DIR}
+        -DBLA_VENDOR=OpenBLAS
+    )
+
+    if(WIN32)
+        list(APPEND SUITESPARSE_CMAKE_OPTIONS
+            -DBLAS_LIBRARIES=${OPENBLAS_DIR}/lib/libopenblas.lib
+            -DLAPACK_LIBRARIES=${OPENBLAS_DIR}/lib/libopenblas.lib
+        )
+    endif()
+
+    message(STATUS "SUITESPARSE_CMAKE_OPTIONS: ${SUITESPARSE_CMAKE_OPTIONS}")
+
+    ExternalProject_Add(
+        suitesparse_openblas
+        SOURCE_DIR "${SUITESPARSE_DIR}"
+        CONFIGURE_COMMAND ${CMAKE_COMMAND} -S "${SUITESPARSE_DIR}" -B "${CMAKE_BINARY_DIR}/suitesparse_openblas" ${SUITESPARSE_CMAKE_OPTIONS}
+        BUILD_COMMAND ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}/suitesparse_openblas" --config Release
+        INSTALL_COMMAND ${CMAKE_COMMAND} --install ${CMAKE_BINARY_DIR}/suitesparse_openblas
+    )
+endfunction()
+
+suitesparse_openblas()
+
+# Find all source files in the src directory
 file(GLOB_RECURSE SRC_FILES "${SRC_DIR}/*.cpp")
 
-# Define include directories (add this section after defining directories)
+if(WIN32)
+    set(EXE_SUFFIX "windows")
+    set(EXE_BLAS "mkl")
+elseif(LINUX)
+    set(EXE_SUFFIX "linux")
+    set(EXE_BLAS "mkl")
+elseif(APPLE)
+    set(EXE_SUFFIX "macos")
+    set(EXE_BLAS "accelerate")
+else()
+    set(EXE_SUFFIX "unknown")
+endif()
+
+# Create the main executable target that uses MKL
+add_executable(main ${SRC_FILES})
+set_target_properties(main PROPERTIES
+    OUTPUT_NAME "main_${EXE_BLAS}_${EXE_SUFFIX}"
+    OUTPUT_NAME_RELEASE "main_${EXE_BLAS}_${EXE_SUFFIX}"
+    RUNTIME_OUTPUT_DIRECTORY "${BIN_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BIN_DIR}"
+)
+
+# Create the main executable target that uses OpenBLAS
+add_executable(main_openblas ${SRC_FILES})
+set_target_properties(main_openblas PROPERTIES
+    OUTPUT_NAME "main_openblas_${EXE_SUFFIX}"
+    OUTPUT_NAME_RELEASE "main_openblas_${EXE_SUFFIX}"
+    RUNTIME_OUTPUT_DIRECTORY "${BIN_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BIN_DIR}"
+)
+
+# Set C++ standard to C++20
+target_compile_features(main PRIVATE
+    cxx_std_20
+)
+target_compile_features(main_openblas PRIVATE
+    cxx_std_20
+)
+
+target_link_directories(main PRIVATE ${SUITESPARSE_MAIN_INSTALL_DIR}/lib)
+target_link_directories(main_openblas PRIVATE ${SUITESPARSE_OPENBLAS_INSTALL_DIR}/lib)
+
+if(WIN32)
+    set(SUITESPARSE_LIB_SUFFIX "_static")
+endif()
+
+# Link against SuiteSparse libraries using imported targets
+target_link_libraries(main PRIVATE
+    cholmod${SUITESPARSE_LIB_SUFFIX}
+    suitesparseconfig${SUITESPARSE_LIB_SUFFIX}
+    amd${SUITESPARSE_LIB_SUFFIX}
+    camd${SUITESPARSE_LIB_SUFFIX}
+    colamd${SUITESPARSE_LIB_SUFFIX}
+    ccolamd${SUITESPARSE_LIB_SUFFIX}
+)
+target_link_libraries(main_openblas PRIVATE
+    cholmod${SUITESPARSE_LIB_SUFFIX}
+    suitesparseconfig${SUITESPARSE_LIB_SUFFIX}
+    amd${SUITESPARSE_LIB_SUFFIX}
+    camd${SUITESPARSE_LIB_SUFFIX}
+    colamd${SUITESPARSE_LIB_SUFFIX}
+    ccolamd${SUITESPARSE_LIB_SUFFIX}
+)
+
+# Define include directories
 set(INCLUDES
     ${LIB_DIR}/eigen
     ${LIB_DIR}/fast_matrix_market/include
-    ${LIB_DIR}/suitesparse/include
-    ${LIB_DIR}/suitesparse/include/suitesparse
+    ${SUITESPARSE_DIR}/include/suitesparse
 )
+# Add include directories
+target_include_directories(main PRIVATE ${INCLUDES})
+target_include_directories(main_openblas PRIVATE ${INCLUDES})
 
-# Begin with an empty string for the command
-set(COMPILE_FLAGS "")
-set(COMMAND_INCLUDES "")
-set(LINK_FLAGS "")
+set(COMPILER_FLAGS "")
 
+# Set up compiler flags
 if(MSVC)
-    # MSVC-specific compilation flags
-    foreach(INCLUDE_DIR ${INCLUDES})
-        list(APPEND COMMAND_INCLUDES /I "\"${INCLUDE_DIR}\"")
-    endforeach()
-    
-    # Add MKL if available
-    if(DEFINED ENV{MKLROOT})
-        list(APPEND COMMAND_INCLUDES /I "\"$ENV{MKLROOT}/include\"")
-    endif()
+    list(APPEND COMPILER_FLAGS /external:W0 /W4 /EHsc /O2)
 
-    # Add remaining MSVC flags
-    list(APPEND COMPILE_FLAGS "/W4" "/std:c++20" "/EHsc" "/DEIGEN_USE_MKL_ALL")
+    # MKL setup for Windows
+    target_compile_definitions(main PRIVATE -DEIGEN_USE_MKL_ALL -DMKL_ILP64)
 
-    list(APPEND LINK_FLAGS "/LIBPATH:'C:/Program Files (x86)/Intel/oneAPI/mkl/latest/lib'" "mkl_intel_ilp64.lib" "mkl_intel_thread.lib" "mkl_core.lib" "/LIBPATH:'C:/Program Files (x86)/Intel/oneAPI/compiler/latest/lib'" "libiomp5md.lib")
+    target_include_directories(main PRIVATE $ENV{MKLROOT}/include)
+
+    target_link_directories(main PRIVATE $ENV{CMPLR_ROOT}/lib)
+    target_link_libraries(main PRIVATE
+        MKL::mkl_intel_ilp64
+        MKL::mkl_intel_thread
+        MKL::mkl_core
+        libiomp5md.lib
+    )
 else()
-    # GCC/Clang compilation flags
-    foreach(INCLUDE_DIR ${INCLUDES})
-        string(APPEND COMMAND_INCLUDES " -I${INCLUDE_DIR}")
-    endforeach()
-    
-    # Add MKL if available
-    if(DEFINED ENV{MKLROOT})
-        string(APPEND COMMAND_INCLUDES " -I\"$ENV{MKLROOT}/include\"")
-    endif()
-    
-    # Add remaining GCC/Clang flags
-    string(APPEND COMPILE_FLAGS " -Wall -std=c++20 -march=native -mavx2 -mfma -DEIGEN_USE_MKL_ALL")
-endif()
+    list(APPEND COMPILER_FLAGS -Wall -march=native -O2)
 
-# Compile each source file to object files
-set(OBJ_FILES "")  # Initialize the list
-
-foreach(SRC_FILE ${SRC_FILES})
-    get_filename_component(FILE_NAME ${SRC_FILE} NAME_WE)
-    set(OBJ_FILE "${OBJ_DIR}/${FILE_NAME}.obj")
-    
-    message(STATUS "Compiling: ${SRC_FILE}")
-    if(MSVC)
-        message(STATUS "Command: \"${CMAKE_CXX_COMPILER}\" ${COMPILE_FLAGS} ${COMMAND_INCLUDES} /Fo\"${OBJ_FILE}\" /c \"${SRC_FILE}\"")
+    if(APPLE)
+        find_package(OpenMP REQUIRED)
         execute_process(
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            COMMAND ${CMAKE_CXX_COMPILER}
-                ${COMPILE_FLAGS}
-                /I lib/fast_matrix_market/include
-                /I lib/suitesparse/include
-                /I lib/suitesparse/include/suitesparse
-                /I lib/eigen
-                ${COMMAND_INCLUDES}
-                /Fo${OBJ_FILE}
-                /c
-                "${SRC_FILE}"
-            RESULT_VARIABLE result
+            COMMAND brew --prefix libomp
+            OUTPUT_VARIABLE LIBOMP_PREFIX
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        target_include_directories(main PRIVATE ${LIBOMP_PREFIX}/include)
+        target_compile_definitions(main PRIVATE  -D_OPENMP)
+        target_link_libraries(main PRIVATE
+            "-framework Accelerate"
+            ${OpenMP_CXX_LIBRARIES}
         )
     else()
-        message(STATUS "Command: ${CMAKE_CXX_COMPILER} ${COMMAND_INCLUDES} ${COMPILE_FLAGS} -c \"${SRC_FILE}\" -o \"${OBJ_FILE}.o\"")
-        execute_process(
-            COMMAND ${CMAKE_CXX_COMPILER} ${COMMAND_INCLUDES} ${COMPILE_FLAGS} -c "${SRC_FILE}" -o "${OBJ_FILE}.o"
-            RESULT_VARIABLE result
+        list(APPEND COMPILER_FLAGS -m64)
+        target_compile_definitions(main PRIVATE -DEIGEN_USE_MKL_ALL -DMKL_ILP64)
+        
+        # MKL setup for Linux
+        target_include_directories(main PRIVATE $ENV{MKLROOT}/include)
+
+        target_link_libraries(main PRIVATE
+            -m64 -Wl,--start-group
+            MKL::mkl_intel_ilp64
+            MKL::mkl_intel_thread
+            MKL::mkl_core
+            -Wl,--end-group
+            -liomp5 -lpthread -lm -ldl
         )
     endif()
-    
-    if(result)
-        message(FATAL_ERROR "Failed to compile ${SRC_FILE}")
-    endif()
-    
-    list(APPEND OBJ_FILES ${OBJ_FILE})
-endforeach()
+endif()
 
-# Link all object files and libraries to create the executable
-if(MSVC)
-    message(STATUS "Linking: ${OBJ_FILES}")
-    message(STATUS "Command: \"${CMAKE_CXX_COMPILER}\" ${OBJ_FILES} /Fe:${BIN_DIR}/main.exe ${SUITESPARSE_BUILD} ${LINK_FLAGS}")
-    execute_process(
-        COMMAND ${CMAKE_CXX_COMPILER} ${OBJ_FILES} /Fe:${BIN_DIR}/main.exe /link ${SUITESPARSE_BUILD} ${LINK_FLAGS}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        RESULT_VARIABLE result
+target_compile_definitions(main_openblas PRIVATE -DEIGEN_USE_BLAS -DEIGEN_USE_LAPACK -DOPEN_BLAS)
+target_include_directories(main_openblas PRIVATE ${OPENBLAS_DIR}/include)
+
+if(WIN32)
+    target_link_libraries(main_openblas PRIVATE
+        ${OPENBLAS_DIR}/lib/libopenblas.lib
     )
 else()
-    execute_process(
-        COMMAND ${CMAKE_CXX_COMPILER} -o ${BIN_DIR}/main.exe ${OBJ_FILES} ${SUITESPARSE_BUILD} ${LINK_FLAGS}
-        RESULT_VARIABLE result
+    target_link_libraries(main_openblas PRIVATE
+        -fopenmp
+        -lopenblas64
     )
 endif()
 
-if(result)
-    message(FATAL_ERROR "Failed to link executable")
-endif()
+# Finalize the target properties
+target_compile_options(main PUBLIC ${COMPILER_FLAGS})
+add_dependencies(main copy_override_files suitesparse_main)
+install(TARGETS main)
 
-message(STATUS "Successfully built main.exe in ${BIN_DIR}")
+target_compile_options(main_openblas PUBLIC ${COMPILER_FLAGS})
+add_dependencies(main_openblas copy_override_files suitesparse_openblas)
+install(TARGETS main_openblas)
+
+message(STATUS "CMake configuration complete. Run 'make' or 'cmake --build . --config Release' to build the project.")

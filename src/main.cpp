@@ -1,22 +1,35 @@
 #include <iostream>
 #include <fstream>
 #include <chrono>
+#include <thread>
 #include <fast_matrix_market/app/Eigen.hpp>
 #include <Eigen/SparseCore>
 #include <filesystem>
-// #include <Eigen/SparseCholesky>
+#include <format>
 #include <Eigen/CholmodSupport>
 #ifdef EIGEN_USE_MKL_ALL
 #include <mkl.h>
 #endif
+#ifdef OPEN_BLAS
+#include <cblas.h>
+#endif
 
 typedef Eigen::SparseMatrix<double, Eigen::ColMajor, SuiteSparse_long> SparseMatrix;
-//typedef Eigen::SparseMatrix<double> SparseMatrix;
 
-constexpr auto HEADER_CSV = "timestamp,matrixname,rows,cols,nonZeros,loadTime,loadMem,decompTime,decompMem,solveTime,solveMem,error"; 
+#ifdef EIGEN_USE_MKL_ALL
+constexpr auto BLAS = "MKL";
+#elif defined(OPEN_BLAS)
+constexpr auto BLAS = "OpenBLAS";
+#else
+constexpr auto BLAS = "Unknown";
+#endif
+
+constexpr auto HEADER_CSV = "os, blas, # threads, timestamp, matrixname, rows, cols, nonZeros, loadTime, loadMem, decompTime, decompMem, solveTime, solveMem, error"; 
 constexpr auto OUT_FILE = "bench.csv";
 
-using namespace std::string_view_literals;
+const std::string getOSName();
+
+const int getNumThreads();
 
 int solveMatrixMarket(const std::filesystem::path& path);
 
@@ -25,18 +38,25 @@ int main(int argc, char* argv[], char** envp) {
 #ifdef EIGEN_VECTORIZE
   std::cerr << "Eigen CPU vectorization is enabled." << std::endl;
 #endif
-  std::cerr << "Eigen Num of Threads: " << Eigen::nbThreads() << std::endl;
-#ifdef EIGEN_USE_MKL_ALL
-  std::cerr << "MKL max threads: " << mkl_get_max_threads() << std::endl;
-#endif
+  std::cerr << BLAS << " Num of threads: " << getNumThreads() << std::endl;
 
-  const std::filesystem::path matrices_dir = "matrices";
+  const std::filesystem::path matrices_dir = (argc > 1) ? argv[1] : "matrices";
+
+  // Check if directory exists before iterating
+  if (!std::filesystem::exists(matrices_dir) || !std::filesystem::is_directory(matrices_dir)) {
+      std::cerr << "Error: Directory '" << matrices_dir.string() << "' does not exist or is not a directory." << std::endl;
+      return 1;
+  }
 
   // Loop through all files in the directory
   for (const auto& entry : std::filesystem::directory_iterator(matrices_dir)) {
     if (entry.is_regular_file() && entry.path().extension() == ".mtx") {
       const auto matrixName { entry.path().stem().string() };
-      
+
+      // Sleep for 10 seconds before processing the next file
+      std::cerr << "Sleeping for 10 seconds..." << std::endl;
+      std::this_thread::sleep_for(std::chrono::seconds(10));
+
       int result = solveMatrixMarket(entry.path());
       if (result == 0) {
         std::cerr << "Processed " << matrixName << std::endl;
@@ -47,6 +67,30 @@ int main(int argc, char* argv[], char** envp) {
   }
 
   return 0;
+}
+
+const std::string getOSName() {
+  #if defined(_WIN32)
+      return "Windows";
+  #elif defined(__APPLE__)
+      return "macOS";
+  #elif defined(__linux__)
+      return "Linux";
+  #elif defined(__unix__)
+      return "Unix";
+  #else
+      return "Unknown";
+  #endif
+}
+
+const int getNumThreads() {
+  #ifdef EIGEN_USE_MKL_ALL
+    return mkl_get_max_threads();
+  #elif defined(OPEN_BLAS)
+    return openblas_get_num_threads();
+  #else
+    return -1;
+  #endif
 }
 
 int solveMatrixMarket(const std::filesystem::path& path) {
@@ -72,10 +116,18 @@ int solveMatrixMarket(const std::filesystem::path& path) {
   auto end{ std::chrono::high_resolution_clock::now() };
   matrix_file.close();
 
-  csv_file << std::format("{}, {}, {}, {}, {}, ", timestamp, path.stem().string(), A.rows(), A.cols(), A.nonZeros());
+  csv_file << std::format("{}, {}, {}, {}, {}, {}, {}, {}, ", getOSName(), BLAS, getNumThreads(), timestamp, path.stem().string(), A.rows(), A.cols(), A.nonZeros());
+
+  const size_t valuesSize = A.nonZeros() * sizeof(double);
+    
+  // Size of inner indices array (nonzeros * sizeof(index type))
+  const size_t innerIndicesSize = A.nonZeros() * sizeof(SuiteSparse_long);
+  
+  // Size of outer indices array ((outerSize+1) * sizeof(index type))
+  const size_t outerIndicesSize = (A.outerSize() + 1) * sizeof(SuiteSparse_long);
 
   const auto loadTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-  const auto loadMem = 0;
+  const auto loadMem = valuesSize + innerIndicesSize + outerIndicesSize;
 
   std::cerr << std::format("Matrix read took {} ms and {} bytes", loadTime, loadMem) << std::endl;
   csv_file << std::format("{}, {}, ", loadTime, loadMem);
@@ -83,8 +135,9 @@ int solveMatrixMarket(const std::filesystem::path& path) {
   Eigen::CholmodDecomposition<SparseMatrix> solver;
 
   // Make sure the matrix is in compressed column form
-  //A.makeCompressed();
+  A.makeCompressed();
 
+  solver.cholmod().memory_allocated = 0;
   std::cerr << std::format("Decomposing matrix...") << std::endl;
   start = std::chrono::high_resolution_clock::now();
   solver.compute(A);
@@ -98,22 +151,23 @@ int solveMatrixMarket(const std::filesystem::path& path) {
   }
 
   const auto decompTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-  const auto decompMem = solver.cholmod().memory_usage;
+  const auto decompMem = solver.cholmod().memory_allocated;
   
-  std::cerr << std::format("Decomposition succeeded with in {} ms", decompTime) << std::endl;
+  std::cerr << std::format("Decomposition succeeded with in {} ms and {} bytes", decompTime, decompMem) << std::endl;
   csv_file << std::format("{}, {}, ", decompTime, decompMem);  
 
   Eigen::VectorXd b(A.rows()), x(A.rows()), xe(A.rows());
   x.setOnes();
   b = A * x;
 
+  solver.cholmod().memory_allocated = 0;
   std::cerr << std::format("Solving matrix...") << std::endl;
   start = std::chrono::high_resolution_clock::now();
   xe = solver.solve(b);
   end = std::chrono::high_resolution_clock::now();
 
   const auto solveTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-  const auto solveMem = 0;
+  const auto solveMem = solver.cholmod().memory_allocated;
 
   std::cerr << std::format("Solve took {} ms and {} bytes", solveTime, solveMem) << std::endl;
   csv_file << std::format("{}, {}, ", solveTime, solveMem);

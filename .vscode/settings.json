@@ -1,5 +1,7 @@
 {
-  "makefile.configureOnOpen": true,
+  "makefile.configureOnOpen": false,
+  "cmake.configureOnEdit": false,
+  "cmake.configureOnOpen": false,
   "files.associations": {
     "__bit_reference": "cpp",
     "__hash_table": "cpp",
@@ -115,7 +117,10 @@
     "xutility": "cpp",
     "codecvt": "cpp",
     "span": "cpp",
-    "core": "cpp"
+    "core": "cpp",
+    "*.in": "cpp",
+    "numbers": "cpp",
+    "semaphore": "cpp"
   },
   "makefile.launchConfigurations": [
     {
