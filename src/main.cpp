@@ -29,10 +29,10 @@ constexpr auto BLAS = "Accelerate";
 constexpr auto BLAS = "Unknown";
 #endif
 
-constexpr auto HEADER_CSV = "os, blas, # threads, timestamp, matrixname, rows, cols, nonZeros, loadTime, loadMem, decompTime, decompMem, solveTime, solveMem, error"; 
+constexpr auto HEADER_CSV = "os, blas, numThreads, timestamp, matrixName, rows, cols, nonZeros, loadTime, loadMem, decompTime, decompMem, solveTime, solveMem, error"; 
 constexpr auto OUT_FILE = "bench.csv";
 
-#ifndef USING_ACCEL
+#ifndef NO_SLEEP
 constexpr std::chrono::seconds SLEEP_TIME{5};
 #endif
 
@@ -63,7 +63,7 @@ int main(int argc, char* argv[], char** envp) {
       const auto matrixName { entry.path().stem().string() };
 
       // Sleep for 10 seconds before processing the next file
-      #ifndef USING_ACCEL
+      #ifndef NO_SLEEP
       std::cerr << std::format("Sleeping for {} seconds...", SLEEP_TIME) << std::endl;
       std::this_thread::sleep_for(SLEEP_TIME);
       #endif

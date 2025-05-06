@@ -289,7 +289,7 @@ set(COMPILER_FLAGS "")
 
 # Set up compiler flags for target main
 if(MSVC)
-    list(APPEND COMPILER_FLAGS /external:W0 /W4 /EHsc /O3)
+    list(APPEND COMPILER_FLAGS /external:W0 /W4 /EHsc /O2)
 
     # MKL setup for Windows
     target_compile_definitions(main PRIVATE -DEIGEN_USE_MKL_ALL -DMKL_ILP64)

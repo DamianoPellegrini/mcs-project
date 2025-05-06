@@ -8,6 +8,12 @@ IF "%~1"=="" (
     SET ONEAPI_PATH=%~1
 )
 
+REM Check if oneAPI file exists
+IF NOT EXIST %ONEAPI_PATH% (
+    echo Error: Intel oneAPI file not found at %ONEAPI_PATH%
+    exit /b 1
+)
+
 REM Initialize Intel oneAPI environment
 echo Initializing Intel oneAPI environment from %ONEAPI_PATH%...
 call %ONEAPI_PATH%

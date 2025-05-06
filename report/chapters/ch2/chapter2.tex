@@ -1,0 +1,314 @@
+\chapter{C++}
+
+\section{Introduzione a C++}
+
+C++ rappresenta una scelta ottimale per l'implementazione di algoritmi di algebra lineare grazie alle sue caratteristiche 
+di efficienza, controllo di basso livello e supporto per la programmazione orientata agli oggetti.
+
+Nel contesto della fattorizzazione di Cholesky, C++ ci permette di:
+\begin{itemize}
+    \item Ottimizzare le operazioni su matrici sparse di grandi dimensioni
+    \item Integrare facilmente librerie specializzate per l'algebra lineare
+    \item Controllare precisamente l'allocazione della memoria
+    \item Sfruttare costrutti template per implementazioni generiche
+\end{itemize}
+
+\section{Tool Chain C++}
+
+Per lo sviluppo del nostro progetto abbiamo utilizzato diverse catene di strumenti in base all'ambiente operativo:
+
+\subsection{Ambiente Windows}
+In ambiente Windows, la nostra implementazione si è basata su:
+
+\begin{itemize}
+    \item \textbf{Microsoft Visual C++ (MSVC)}: Il compilatore ufficiale di Microsoft che offre ottimizzazioni specifiche per 
+    architetture Intel/AMD.
+    
+    \item \textbf{Intel Fortran Compiler (IFX)}: Compilatore Intel che abbiamo utilizzato per compilare alcune componenti di SuiteSparse.
+
+    \item \textbf{CMake}: Sistema cross-platform per la gestione del processo di build, permettendo di generare progetti 
+    Visual Studio nativi mantenendo la portabilità del codice. La configurazione CMake ha facilitato l'integrazione delle diverse 
+    librerie utilizzate nel progetto.
+\end{itemize}
+
+\subsection{Ambiente Linux}
+Per garantire la portabilità del codice e per effettuare test comparativi, abbiamo anche utilizzato:
+
+\begin{itemize}
+    \item \textbf{GNU Compiler Collection (GCC)}: Compilatore C++ standard in ambienti Linux, utilizzato nella versione 11.3 con pieno supporto per C++17.
+    
+    \item \textbf{GNU Fortran (GFortran)}: Necessario per compilare alcune componenti delle librerie BLAS e LAPACK utilizzate dal progetto.
+    
+    \item \textbf{CMake}: Sistema cross-platform per la gestione del processo di build, permettendo di generare progetti Visual Studio nativi mantenendo la portabilità del codice. La configurazione CMake ha facilitato l'integrazione delle diverse librerie utilizzate nel progetto.
+\end{itemize}
+
+\section{Librerie C++ per la fattorizzazione di Cholesky}
+
+\subsection{SuiteSparse}
+SuiteSparse fornisce algoritmi altamente ottimizzati per matrici sparse. In particolare, abbiamo integrato CHOLMOD (con le sue dipendenze), 
+la componente specializzata per la fattorizzazione di Cholesky di matrici sparse simmetriche definite positive.
+
+CHOLMOD offre prestazioni superiori rispetto altre implementazioni per matrici di grandi dimensioni grazie a:
+
+\begin{itemize}
+    \item Algoritmi di ordinamento avanzati (AMD, COLAMD, METIS) che riducono il fill-in durante la fattorizzazione
+    \item Decomposizione supernodale che sfrutta operazioni BLAS di livello 3
+    \item Supporto per calcoli multithreaded che sfruttano processori multi-core
+    \item Gestione ottimizzata della memoria che riduce il sovraccarico per matrici molto sparse
+\end{itemize}
+
+\subsection{Eigen}
+Eigen è una libreria C++ header-only di algebra lineare ad alte prestazioni, completamente sviluppata in template 
+per massimizzare l'ottimizzazione in fase di compilazione.
+
+Una caratteristica distintiva di Eigen è la sua architettura estensibile che permette 
+l'integrazione con diverse librerie esterne specializzate. Nel nostro progetto, 
+abbiamo scelto di utilizzare l'interfaccia con CHOLMOD di SuiteSparse:
+
+\begin{itemize}
+    \item \textbf{Interfaccia CHOLMOD}: Abbiamo sfruttato principalmente il modulo \texttt{CholmodSupport} di Eigen che 
+    permette di utilizzare gli algoritmi avanzati di CHOLMOD mantenendo la sintassi familiare di Eigen. 
+    
+    \item \textbf{Alternative considerate}: Sarebbe stato possibile utilizzare l'implementazione nativa di Eigen 
+    (\texttt{SimplicialLLT}) con o senza supporto BLAS/LAPACK, che risulta adeguata per matrici di dimensioni moderate, 
+    ma dato che volevamo basarci sull'implementazione di MATLAB abbiamo evitato.
+    
+    \item \textbf{Alternative proprietarie}: Eigen supporta anche interfacce verso librerie proprietarie come Pardiso di Intel oneAPI e 
+    Accelerate di Apple, che offrono implementazioni altamente ottimizzate ma non open-source.
+\end{itemize}
+
+Per la fattorizzazione di Cholesky, il nostro approccio primario è stato:
+\texttt{CholmodSupport::CholmodDecomposition} che delega il calcolo effettivo a CHOLMOD, beneficiando degli algoritmi di ordinamento 
+avanzati e dell'ottimizzazione per sistemi multi-core e scegliendo in automatico che algoritmo di ordinamento usare e che tipo di fattorizzazione
+(supermodal vs simplicial).
+
+La flessibilità di Eigen ci ha permesso di integrare efficacemente la potenza di CHOLMOD mantenendo un'interfaccia coerente e familiare nel codice principale, senza compromettere l'approccio open-source del progetto.
+
+\subsection{Fast Matrix Market}
+Per la lettura delle matrici sparse dal formato Matrix Market (MTX), abbiamo integrato la libreria Fast Matrix Market. 
+Questa libreria ha consentito di importare efficientemente dataset di test di grandi dimensioni.
+
+Fast Matrix Market si distingue per:
+\begin{itemize}
+    \item Lettura parallelizzata che sfrutta tutti i core disponibili
+    \item Parsing efficiente che riduce significativamente i tempi di caricamento
+    \item Integrazione diretta con Eigen senza necessità di conversioni intermedie
+    \item Supporto per diverse precisioni numeriche (float, double, complex)
+\end{itemize}
+
+\section{Librerie BLAS e LAPACK}
+
+Le librerie BLAS (Basic Linear Algebra Subprograms) e LAPACK (Linear Algebra PACKage) rappresentano fondamenti essenziali per l'algebra 
+lineare computazionale. Queste librerie standardizzate forniscono implementazioni ottimizzate di operazioni matriciali e vettoriali 
+di base che costituiscono i blocchi fondamentali per algoritmi più complessi, inclusa la fattorizzazione di Cholesky.
+
+\subsection{Intel MKL}
+
+Intel Math Kernel Library (MKL) rappresenta l'implementazione commerciale di riferimento per BLAS e LAPACK, sviluppata e ottimizzata 
+specificamente per processori Intel. Questa libreria offre prestazioni eccezionali su architetture x86 e x86-64 grazie a:
+
+\begin{itemize}
+    \item Ottimizzazioni a livello di microarchitettura che sfruttano set di istruzioni specifici (AVX, AVX2, AVX-512)
+    \item Parallelizzazione automatica che utilizza efficacemente processori multi-core
+    \item Gestione intelligente della cache e della memoria per massimizzare il throughput
+    \item Routine specializzate per matrici sparse che riducono significativamente il tempo di calcolo
+\end{itemize}
+
+\subsection{OpenBLAS}
+
+OpenBLAS rappresenta l'alternativa open source più matura a Intel MKL, offrendo prestazioni competitive su diverse architetture hardware. 
+Questa libreria deriva dal progetto GotoBLAS2 e si distingue per:
+
+\begin{itemize}
+    \item Ottimizzazioni specifiche per diverse architetture (Intel, AMD, ARM, POWER)
+    \item Supporto per parallelismo multi-thread attraverso implementazione OpenMP
+    \item Compatibilità con l'interfaccia CBLAS standard
+    \item Prestazioni scalabili fino a 256 core
+\end{itemize}
+
+\subsection{Accellerate}
+
+Accelerate è il framework di calcolo numerico sviluppato da Apple e integrato nativamente nei sistemi operativi macOS e iOS. Include implementazioni ottimizzate di BLAS e LAPACK specificamente progettate per l'hardware Apple, inclusi i processori M1/M2/M3 basati su architettura ARM.
+
+Caratteristiche distintive di Accelerate includono:
+
+\begin{itemize}
+    \item Ottimizzazioni specifiche per silicon Apple (particolarmente efficienti sui chip Apple Silicon)
+    \item Integrazione profonda con l'ecosistema Apple e supporto per tecnologie come Grand Central Dispatch
+    \item Supporto per calcoli vettoriali SIMD attraverso il framework vDSP
+    \item Bilanciamento automatico tra prestazioni ed efficienza energetica
+\end{itemize}
+
+\section{Implementazione in C++}
+
+\subsection{Considerazioni generali} 
+
+Ovviamente avendo accesso al codice sorgente possiamo essere più.
+
+A differenza di MATLAB, andiamo a ottenere anche il tipo di BLAS e il numero di thread utilizzati per l'esecuzione.
+
+\subsection{Parametri analizzati} 
+
+Analogamente all'implementazione MATLAB, abbiamo misurato:
+
+Tempo di esecuzione:
+\begin{itemize}
+    \item \textbf{loadTime:} tempo necessario per caricare la matrice dal file MTX (ms)
+    \item \textbf{decompTime:} tempo per eseguire la fattorizzazione di Cholesky (ms)
+    \item \textbf{solveTime:} tempo per risolvere un sistema lineare usando i fattori (ms)
+\end{itemize}
+
+Per misurare il tempo con precisione, abbiamo utilizzato le funzionalità della libreria standard C++:
+\begin{verbatim}
+auto start = std::chrono::high_resolution_clock::now();
+// Operazione da misurare
+auto end = std::chrono::high_resolution_clock::now();
+auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+\end{verbatim}
+
+Utilizzo di memoria:
+\begin{itemize}
+    \item \textbf{loadMem:} memoria utilizzata per caricare la matrice (MB)
+    \item \textbf{decompMem:} memoria utilizzata per la fattorizzazione (MB)
+    \item \textbf{solveMem:} memoria utilizzata per la soluzione (MB)
+\end{itemize}
+
+Il calcolo della memoria per l'operazioni di caricamento della matrice è stato implementato manualmente, considerando:
+\begin{verbatim}
+size_t valuesSize = A.nonZeros() * sizeof(double);
+size_t innerIndicesSize = A.nonZeros() * sizeof(int64_t);
+size_t outerIndicesSize = (A.outerSize() + 1) * sizeof(int64_t);
+auto loadMem = valuesSize + innerIndicesSize + outerIndicesSize;
+\end{verbatim}
+
+Invece per il calcolo della memoria per le operazioni di fattorizzazione e risoluzione, abbiamo modificato parte del codice di CHOLMOD, 
+aggiungendo un contatore per la memoria allocata. Questo contatore viene resettato prima di ogni operazione e 
+aggiornato durante l'allocazione della memoria.
+
+\begin{verbatim}
+solver.cholmod().memory_allocated = 0;  // Reset contatore
+// Operazione da misurare
+auto operationMem = solver.cholmod().memory_allocated;
+\end{verbatim}
+
+Accuratezza:
+\begin{itemize}
+    \item \textbf{Errore Relativo:} errore relativo della soluzione calcolata rispetto alla soluzione attesa
+\end{itemize}
+
+\subsection{Implementazione della fattorizzazione di Cholesky}
+
+In linea con l'approccio MATLAB, abbiamo implementato la fattorizzazione di Cholesky utilizzando la libreria CHOLMOD attraverso 
+l'interfaccia fornita da Eigen:
+
+\begin{verbatim}
+Eigen::CholmodDecomposition<SparseMatrix> solver;
+solver.compute(A); // Fattorizzazione della matrice A
+xe = solver.solve(b); // Risoluzione del sistema Ax = b
+\end{verbatim}
+
+Questa interfaccia consente di sfruttare le ottimizzazioni avanzate di CHOLMOD, inclusi gli algoritmi di ordinamento e 
+la decomposizione supernodale, mantenendo al contempo la sintassi familiare di Eigen. La libreria CHOLMOD gestisce 
+automaticamente la scelta dell'algoritmo di ordinamento e del tipo di composizione più adatto in base alla struttura della matrice, 
+ottimizzando così le prestazioni della fattorizzazione.
+
+\section{Documentazione e Integrazione Librerie C++}
+
+Per integrare efficacemente le librerie C++ nel nostro progetto, abbiamo dovuto affrontare diverse sfide legate alla documentazione e
+alla configurazione.
+
+\subsection{Eigen}
+
+La documentazione di Eigen rappresenta un eccellente esempio di riferimento tecnico per progetti open-source:
+
+\begin{itemize}
+    \item \textbf{Completezza:} Tutorial dettagliati, guida per le classi e documentazione delle API generata con Doxygen.
+    \item \textbf{Esempi:} Numerosi esempi di codice che coprono tutti i moduli principali.
+    \item \textbf{Integrazione:} Essendo header-only, l'integrazione richiede solo l'inclusione dei file header senza necessità di linking.
+    \item \textbf{Moduli esterni:} La documentazione sul modulo \texttt{CholmodSupport} è più limitata rispetto ai moduli 
+    principali, richiedendo talvolta la consultazione del codice sorgente.
+\end{itemize}
+
+L'integrazione di Eigen nel progetto è stata generalmente agevole grazie alla semplicità del modello header-only e ai chiari esempi 
+disponibili nella documentazione ufficiale.
+
+\subsection{SuiteSparse}
+
+La documentazione di SuiteSparse, e in particolare di CHOLMOD, presenta caratteristiche distintive:
+
+\begin{itemize}
+    \item \textbf{Documentazione scientifica:} Articoli accademici dettagliati che descrivono gli algoritmi implementati.
+    \item \textbf{Documentazione tecnica:} File README e documentazione interna al codice che descrivono l'API C.
+    \item \textbf{Limitazioni:} Minore enfasi sugli esempi di integrazione in progetti C++ moderni.
+    \item \textbf{Build system:} Documentazione limitata sull'integrazione con sistemi di build.
+\end{itemize}
+
+Nonostante l'eccellente documentazione degli algoritmi sottostanti, l'integrazione di SuiteSparse ha richiesto maggiore impegno, 
+specialmente per configurare correttamente le dipendenze tra i vari componenti.
+
+\subsection{Fast Matrix Market}
+
+La libreria Fast Matrix Market offre una documentazione concisa ma efficace:
+
+\begin{itemize}
+    \item \textbf{GitHub README:} Documenta chiaramente l'API principale e i casi d'uso comuni.
+    \item \textbf{Esempi:} Include esempi di integrazione con Eigen che hanno facilitato significativamente l'adozione.
+    \item \textbf{Integrazione CMake:} Fornisce configurazioni CMake moderne con supporto per \texttt{find\_package}.
+\end{itemize}
+
+L'integrazione di Fast Matrix Market è stata notevolmente semplice grazie alla documentazione mirata e agli esempi pratici, 
+permettendo una rapida implementazione della lettura di matrici sparse in formato MTX.
+
+\subsection{Librerie BLAS e LAPACK}
+
+Le sfide più significative nel progetto sono emerse dall'integrazione delle implementazioni BLAS e LAPACK:
+
+\begin{itemize}
+    \item \textbf{Documentazione frammentata:} Ogni implementazione (Intel MKL, OpenBLAS, Accelerate) presenta una propria documentazione con convenzioni e approcci di configurazione diversi, ma questo non ha rappresentato il problema principale.
+    
+    \item \textbf{Difficoltà CMake:} Abbiamo riscontrato notevoli difficoltà nell'integrazione attraverso CMake:
+    \begin{itemize}
+        \item Mancanza di moduli CMake standardizzati per il rilevamento delle diverse implementazioni, rendendo inefficaci i moduli standard come FindBLAS e FindLAPACK.
+        \item Necessità di linkare manualmente le librerie specificando esattamente i percorsi e i componenti richiesti, invece di poter utilizzare i meccanismi automatizzati di CMake.
+        \item Problemi di path e linking quando più implementazioni BLAS/LAPACK erano presenti nel sistema.
+        \item Configurazioni diverse richieste per Windows (MKL/MSVC) e Linux (OpenBLAS/GCC).
+    \end{itemize}
+    
+    \item \textbf{Conflitti di simboli:} In alcuni casi, l'uso concorrente di diverse implementazioni BLAS ha causato conflitti di simboli difficili da diagnosticare.
+\end{itemize}
+
+\subsection{Conclusioni}
+
+Dall'esperienza di integrazione delle diverse librerie, abbiamo tratto importanti conclusioni:
+
+\begin{itemize}
+    \item Le librerie con documentazione orientata agli esempi (Eigen, Fast Matrix Market) hanno richiesto tempi di integrazione significativamente minori.
+    
+    \item Le dipendenze transitive non documentate tra librerie C/C++ rappresentano una sfida significativa per l'integrazione tramite CMake.
+    
+    \item L'approccio più efficace è risultato essere lo sviluppo di configurazioni CMake modulari che isolano le complessità di ogni libreria.
+    
+    \item La documentazione delle librerie di algebra lineare spesso privilegia la descrizione matematica degli algoritmi a scapito dei dettagli di integrazione tecnica.
+\end{itemize}
+
+Queste sfide di integrazione, sebbene impegnative, hanno permesso di sviluppare un sistema robusto e flessibile che può adattarsi a diverse implementazioni BLAS/LAPACK mantenendo un'interfaccia coerente attraverso Eigen.
+
+\section{Commenti}
+
+Il nostro progetto ha dimostrato con successo l'integrazione di librerie specializzate per l'algebra lineare in un ecosistema C++ moderno. 
+Utilizzando Eigen come interfaccia ad alto livello e SuiteSparse (in particolare CHOLMOD) come motore di calcolo per la fattorizzazione di 
+Cholesky, siamo riusciti a costruire un sistema flessibile e performante, capace di gestire matrici sparse di grandi dimensioni.
+
+Un aspetto distintivo della nostra implementazione è stata la capacità di sfruttare diverse implementazioni di BLAS e LAPACK 
+(Intel MKL, OpenBLAS, Accelerate), permettendoci di confrontare direttamente le prestazioni di soluzioni commerciali e open-source. 
+Questa flessibilità ci ha consentito di simulare efficacemente il comportamento di MATLAB, che utilizza internamente CHOLMOD con 
+implementazioni BLAS ottimizzate.
+
+L'obiettivo principale dell'esperimento era verificare se un'alternativa completamente open-source potesse offrire prestazioni 
+paragonabili alla soluzione commerciale di MATLAB.
+
+Le difficoltà incontrate nell'integrazione delle diverse librerie, specialmente quelle legate a BLAS e LAPACK, hanno rivelato 
+la necessità di migliorare gli strumenti di build e la documentazione per questi componenti fondamentali dell'ecosistema di 
+calcolo scientifico. Nonostante queste sfide, il nostro progetto dimostra che è possibile costruire una piattaforma di calcolo 
+numerico avanzata basata interamente su tecnologie open-source, offrendo un'alternativa valida a soluzioni commerciali come MATLAB per 
+applicazioni che richiedono la fattorizzazione di Cholesky su matrici sparse di grandi dimensioni.

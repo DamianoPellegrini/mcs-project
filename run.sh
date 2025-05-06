@@ -2,14 +2,14 @@
 # filepath: run.sh
 
 # Detect operating system and set build directory
-if [ "$(uname)" == "Darwin" ]; then
+if [ "$(uname)" = "Darwin" ]; then
     # macOS
     BUILD_DIR="build_macos"
     EXE_BLAS="accelerate"
     EXE_SUFFIX="macos"
     BLAS="Accelerate"
     echo "Detected macOS system"
-elif [ "$(uname)" == "Linux" ]; then
+elif [ "$(uname)" = "Linux" ]; then
     # Linux
     BUILD_DIR="build_linux"
     EXE_BLAS="mkl"
@@ -28,6 +28,10 @@ else
 fi
 
 if [ $BLAS = "MKL" ]; then
+    if [ ! -f "$ONEAPI_PATH" ]; then
+        echo "Error: Intel oneAPI file not found at $ONEAPI_PATH"
+        exit 1
+    fi
     # Initialize Intel oneAPI environment
     echo "Initializing Intel oneAPI environment from $ONEAPI_PATH..."
     source "$ONEAPI_PATH"
