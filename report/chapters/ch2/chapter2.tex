@@ -42,11 +42,22 @@ Per garantire la portabilità del codice e per effettuare test comparativi, abbi
     \item \textbf{CMake}: Sistema cross-platform per la gestione del processo di build, permettendo di generare progetti Visual Studio nativi mantenendo la portabilità del codice. La configurazione CMake ha facilitato l'integrazione delle diverse librerie utilizzate nel progetto.
 \end{itemize}
 
+\subsection{Ambiente MacOS}
+Per testare un ambiente più professionale ed utilizzare una libreria proprietaria differente, ci siamo forniti di:
+
+\begin{itemize}
+    \item \textbf{Apple clang (clang)}: Compilatore C++ standard in ambienti Apple MacOS, utilizzato nella versione 17.0.0 con pieno supporto per C++17.
+    
+    \item \textbf{GNU Fortran (GFortran)}: Necessario per compilare alcune componenti delle librerie BLAS e LAPACK utilizzate dal progetto.
+    
+    \item \textbf{CMake}: Sistema cross-platform per la gestione del processo di build, permettendo di generare progetti Visual Studio nativi mantenendo la portabilità del codice. La configurazione CMake ha facilitato l'integrazione delle diverse librerie utilizzate nel progetto.
+\end{itemize}
+
 \section{Librerie C++ per la fattorizzazione di Cholesky}
 
 \subsection{SuiteSparse}
 SuiteSparse fornisce algoritmi altamente ottimizzati per matrici sparse. In particolare, abbiamo integrato CHOLMOD (con le sue dipendenze), 
-la componente specializzata per la fattorizzazione di Cholesky di matrici sparse simmetriche definite positive.
+la componente specializzata per la fattorizzazione di Cholesky di matrici sparse simmetriche definite positive, con licenza GNU LGPL.
 
 CHOLMOD offre prestazioni superiori rispetto altre implementazioni per matrici di grandi dimensioni grazie a:
 
@@ -59,7 +70,7 @@ CHOLMOD offre prestazioni superiori rispetto altre implementazioni per matrici d
 
 \subsection{Eigen}
 Eigen è una libreria C++ header-only di algebra lineare ad alte prestazioni, completamente sviluppata in template 
-per massimizzare l'ottimizzazione in fase di compilazione.
+per massimizzare l'ottimizzazione in fase di compilazione, con licenza MPL2.
 
 Una caratteristica distintiva di Eigen è la sua architettura estensibile che permette 
 l'integrazione con diverse librerie esterne specializzate. Nel nostro progetto, 
@@ -71,7 +82,7 @@ abbiamo scelto di utilizzare l'interfaccia con CHOLMOD di SuiteSparse:
     
     \item \textbf{Alternative considerate}: Sarebbe stato possibile utilizzare l'implementazione nativa di Eigen 
     (\texttt{SimplicialLLT}) con o senza supporto BLAS/LAPACK, che risulta adeguata per matrici di dimensioni moderate, 
-    ma dato che volevamo basarci sull'implementazione di MATLAB abbiamo evitato.
+    ma dato che volevamo basarci sull'implementazione di MATLAB abbiamo optato per l'altra strada.
     
     \item \textbf{Alternative proprietarie}: Eigen supporta anche interfacce verso librerie proprietarie come Pardiso di Intel oneAPI e 
     Accelerate di Apple, che offrono implementazioni altamente ottimizzate ma non open-source.
@@ -85,7 +96,7 @@ avanzati e dell'ottimizzazione per sistemi multi-core e scegliendo in automatico
 La flessibilità di Eigen ci ha permesso di integrare efficacemente la potenza di CHOLMOD mantenendo un'interfaccia coerente e familiare nel codice principale, senza compromettere l'approccio open-source del progetto.
 
 \subsection{Fast Matrix Market}
-Per la lettura delle matrici sparse dal formato Matrix Market (MTX), abbiamo integrato la libreria Fast Matrix Market. 
+Per la lettura delle matrici sparse dal formato Matrix Market (MTX), abbiamo integrato la libreria Fast Matrix Market, con licenza BSD-2. 
 Questa libreria ha consentito di importare efficientemente dataset di test di grandi dimensioni.
 
 Fast Matrix Market si distingue per:
@@ -126,15 +137,16 @@ Questa libreria deriva dal progetto GotoBLAS2 e si distingue per:
     \item Prestazioni scalabili fino a 256 core
 \end{itemize}
 
-\subsection{Accellerate}
+\subsection{Apple Accelerate}
 
-Accelerate è il framework di calcolo numerico sviluppato da Apple e integrato nativamente nei sistemi operativi macOS e iOS. Include implementazioni ottimizzate di BLAS e LAPACK specificamente progettate per l'hardware Apple, inclusi i processori M1/M2/M3 basati su architettura ARM.
+Accelerate è il framework di calcolo numerico sviluppato da Apple e integrato nativamente nei sistemi operativi macOS e iOS.
+Include implementazioni ottimizzate di BLAS e LAPACK specificamente progettate per l'hardware Apple, inclusi i processori M-Series basati su architettura Apple Silicon (ARM).
 
 Caratteristiche distintive di Accelerate includono:
 
 \begin{itemize}
-    \item Ottimizzazioni specifiche per silicon Apple (particolarmente efficienti sui chip Apple Silicon)
-    \item Integrazione profonda con l'ecosistema Apple e supporto per tecnologie come Grand Central Dispatch
+    \item Ottimizzazioni specifiche per chip Apple Silicon
+    \item Integrazione profonda con l'ecosistema di librerie Apple e supporto per tecnologie come Grand Central Dispatch
     \item Supporto per calcoli vettoriali SIMD attraverso il framework vDSP
     \item Bilanciamento automatico tra prestazioni ed efficienza energetica
 \end{itemize}
@@ -143,17 +155,17 @@ Caratteristiche distintive di Accelerate includono:
 
 \subsection{Considerazioni generali} 
 
-Ovviamente avendo accesso al codice sorgente possiamo essere più.
-
-A differenza di MATLAB, andiamo a ottenere anche il tipo di BLAS e il numero di thread utilizzati per l'esecuzione.
+Avendo accesso al codice sorgente volendo è possibile adattare il codice alla risoluzione di un problema specifico,
+nel nostro caso abbiamo mantenuto un implementazione piuttosto generica, date le diverse matrici da trattare.
 
 \subsection{Parametri analizzati} 
 
-Analogamente all'implementazione MATLAB, abbiamo misurato:
+A differenza di MATLAB, andiamo a ottenere anche il tipo di BLAS e il numero di thread utilizzati per l'esecuzione,
+nello specifico abbiamo misurato:
 
 Tempo di esecuzione:
 \begin{itemize}
-    \item \textbf{loadTime:} tempo necessario per caricare la matrice dal file MTX (ms)
+    \item \textbf{loadTime:} tempo necessario per caricare la matrice dal file in formato Matrix Market (MTX) (ms)
     \item \textbf{decompTime:} tempo per eseguire la fattorizzazione di Cholesky (ms)
     \item \textbf{solveTime:} tempo per risolvere un sistema lineare usando i fattori (ms)
 \end{itemize}
@@ -163,17 +175,20 @@ Per misurare il tempo con precisione, abbiamo utilizzato le funzionalità della 
 auto start = std::chrono::high_resolution_clock::now();
 // Operazione da misurare
 auto end = std::chrono::high_resolution_clock::now();
-auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+auto duration =
+    std::chrono::duration_cast<std::chrono::milliseconds>(
+        end - start
+    ).count();
 \end{verbatim}
 
 Utilizzo di memoria:
 \begin{itemize}
-    \item \textbf{loadMem:} memoria utilizzata per caricare la matrice (MB)
-    \item \textbf{decompMem:} memoria utilizzata per la fattorizzazione (MB)
-    \item \textbf{solveMem:} memoria utilizzata per la soluzione (MB)
+    \item \textbf{loadMem:} memoria utilizzata per caricare la matrice (Bytes)
+    \item \textbf{decompMem:} memoria utilizzata per la fattorizzazione (Bytes)
+    \item \textbf{solveMem:} memoria utilizzata per la soluzione (Bytes)
 \end{itemize}
 
-Il calcolo della memoria per l'operazioni di caricamento della matrice è stato implementato manualmente, considerando:
+Il calcolo della memoria per le operazioni di caricamento della matrice è stato implementato manualmente, considerando:
 \begin{verbatim}
 size_t valuesSize = A.nonZeros() * sizeof(double);
 size_t innerIndicesSize = A.nonZeros() * sizeof(int64_t);
@@ -195,6 +210,9 @@ Accuratezza:
 \begin{itemize}
     \item \textbf{Errore Relativo:} errore relativo della soluzione calcolata rispetto alla soluzione attesa
 \end{itemize}
+
+Per ridurre l'errore nel calcolo dell'errore evitandoci una delle due radici, abbiamo usato la seguente formula: \[\sqrt{ \frac{ \| x - x_e \|^2 }{ \| x \|^2 } } = \frac{ \| x - x_e \|_2 }{ \| x \|_2 }\]
+Dove \(\| x - x_e \|^2\) e \(\| x \|^2\) sono le somme delle componenti del vettore al quadrato.
 
 \subsection{Implementazione della fattorizzazione di Cholesky}
 
@@ -270,11 +288,10 @@ Le sfide più significative nel progetto sono emerse dall'integrazione delle imp
     \begin{itemize}
         \item Mancanza di moduli CMake standardizzati per il rilevamento delle diverse implementazioni, rendendo inefficaci i moduli standard come FindBLAS e FindLAPACK.
         \item Necessità di linkare manualmente le librerie specificando esattamente i percorsi e i componenti richiesti, invece di poter utilizzare i meccanismi automatizzati di CMake.
-        \item Problemi di path e linking quando più implementazioni BLAS/LAPACK erano presenti nel sistema.
         \item Configurazioni diverse richieste per Windows (MKL/MSVC) e Linux (OpenBLAS/GCC).
     \end{itemize}
     
-    \item \textbf{Conflitti di simboli:} In alcuni casi, l'uso concorrente di diverse implementazioni BLAS ha causato conflitti di simboli difficili da diagnosticare.
+    \item \textbf{Conflitti di simboli:} In alcuni casi, quali l'utilizzo dell'interfaccia standard ILP64 LAPACK 3.11.0 dell'implementazione di Apple Accelerate ha causato conflitti di simboli difficili da risolvere.
 \end{itemize}
 
 \subsection{Conclusioni}
@@ -307,8 +324,11 @@ implementazioni BLAS ottimizzate.
 L'obiettivo principale dell'esperimento era verificare se un'alternativa completamente open-source potesse offrire prestazioni 
 paragonabili alla soluzione commerciale di MATLAB.
 
-Le difficoltà incontrate nell'integrazione delle diverse librerie, specialmente quelle legate a BLAS e LAPACK, hanno rivelato 
+Per quanto l'ideazione di una soluzione artigianale possa sembrare complicato, lo sviluppo del codice in se è stata forse la parte meno impegnativa.
+Maggiori difficoltà invece, le abbiamo incontrate nell'integrazione delle diverse librerie, specialmente quelle legate a BLAS e LAPACK, hanno rivelato 
 la necessità di migliorare gli strumenti di build e la documentazione per questi componenti fondamentali dell'ecosistema di 
-calcolo scientifico. Nonostante queste sfide, il nostro progetto dimostra che è possibile costruire una piattaforma di calcolo 
+calcolo scientifico.
+
+Nonostante queste sfide, il nostro progetto dimostra che è possibile costruire una piattaforma di calcolo 
 numerico avanzata basata interamente su tecnologie open-source, offrendo un'alternativa valida a soluzioni commerciali come MATLAB per 
 applicazioni che richiedono la fattorizzazione di Cholesky su matrici sparse di grandi dimensioni.

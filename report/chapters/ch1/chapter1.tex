@@ -62,7 +62,7 @@ aumentando significativamente la complessità computazionale e l'utilizzo di mem
 
 MATLAB affronta questo problema utilizzando l'algoritmo AMD (Approximate Minimum Degree), 
 una strategia di riordinamento che analizza la struttura di sparsità della matrice 
-e determina una permutazione ottimale delle righe e colonne. 
+e approssima una permutazione ottimale delle righe e colonne. 
 Questa permutazione minimizza il fill-in atteso durante la fattorizzazione, 
 riducendo notevolmente sia i requisiti di memoria che il tempo di calcolo.
 
@@ -111,8 +111,8 @@ ad alte prestazioni. Ulteriori dettagli sul funzionamento di queste librerie son
 \href{https://netlib.org/blas/}{netlib.org/blas}.
 
 Queste librerie esistono in diverse implementazioni, ciascuna ottimizzata per architetture hardware specifiche.
-Le implementazioni più diffuse includono OpenBLAS (ottimizzata per molteplici architetture), Accellerate 
-(Implementazione per sistemi operativi MacOs) e Intel MKL (Math Kernel Library), 
+Le implementazioni più diffuse includono OpenBLAS (ottimizzata per molteplici architetture), Apple Accelerate 
+(Implementazione per sistemi operativi MacOS) e Intel MKL (oneAPI Math Kernel Library), 
 quest'ultima particolarmente performante su processori Intel.
 
 Nel caso specifico di MATLAB su Windows e Linux, l'implementazione utilizzata è Intel MKL, 
@@ -132,7 +132,7 @@ I risultati ottenuti sono i seguenti (la versione potrebbe variare a seconda del
     for Intel(R) 64 architecture applications (CNR branch AVX2) supporting Linear Algebra PACKage (LAPACK 3.11.0)'
 \end{verbatim}
 
-Dato che Intel MKL e Accellerate sono librerie commerciali, abbiamo deciso di fare non solo un confronto tra MATLAB e Open Source,
+Dato che Intel MKL e Apple Accelerate sono librerie commerciali, abbiamo deciso di fare non solo un confronto tra MATLAB e Open Source,
 ma anche di analizzare le differenze tra le varie implementazioni di BLAS e LAPACK.
 
 \section{Implementazione in MATLAB}
@@ -141,7 +141,7 @@ ma anche di analizzare le differenze tra le varie implementazioni di BLAS e LAPA
 
 Tempo di esecuzione:
 \begin{itemize}
-    \item \textbf{loadTime:} tempo necessario per caricare la matrice dal file MAT (ms)
+    \item \textbf{loadTime:} tempo necessario per caricare la matrice dal file in formato MATLAB (MAT) (ms)
     \item \textbf{decompTime:} tempo per eseguire la fattorizzazione di Cholesky (ms)
     \item \textbf{solveTime:} tempo per risolvere un sistema lineare usando i fattori (ms)
 \end{itemize}
@@ -151,9 +151,9 @@ che misurano il tempo di esecuzione assieme ad altre informazioni di un blocco d
 
 Utilizzo di memoria:
 \begin{itemize}
-    \item \textbf{Memoria caricamento Matrice:} memoria utilizzata per caricare la matrice (MB)
-    \item \textbf{Memoria fattorizzazione:} memoria utilizzata per la fattorizzazione (MB)
-    \item \textbf{Memoria soluzione:} memoria utilizzata per la soluzione (MB)
+    \item \textbf{Memoria caricamento Matrice:} memoria utilizzata per caricare la matrice (Bytes)
+    \item \textbf{Memoria fattorizzazione:} memoria utilizzata per la fattorizzazione (Bytes)
+    \item \textbf{Memoria soluzione:} memoria utilizzata per la soluzione (Bytes)
 \end{itemize}
 
 Per il calcolo della memoria, abbiamo utilizzato una funzionalità del profiler di MATLAB non documentato,
@@ -198,7 +198,7 @@ spesso l'investimento economico, soprattutto considerando i costi indiretti lega
 
 Tuttavia, è importante evidenziare alcune limitazioni. La documentazione ufficiale, pur essendo esaustiva nell'illustrare l'utilizzo delle 
 funzioni, raramente rivela i dettagli implementativi sottostanti. Nel caso della fattorizzazione di Cholesky, ad esempio, 
-la documentazione specifica parametri e comportamenti attesi, ma non approfondisce gli algoritmi utilizzati o le ottimizzazioni applicate. 
+la documentazione specifica parametri e comportamenti attesi, ma non approfondisce gli algoritmi utilizzati o le ottimizzazioni applicate.
 Questa opacità può risultare problematica durante il debugging di casi particolari o quando si necessita di comprendere le ragioni di 
 determinati comportamenti computazionali.
 
@@ -206,10 +206,11 @@ determinati comportamenti computazionali.
 
 Un aspetto particolarmente interessante emerso dalla nostra analisi riguarda l'architettura interna di MATLAB: alcune funzionalità core, 
 inclusa la fattorizzazione di Cholesky, si basano su librerie open source come SuiteSparse, ottimizzate tramite implementazioni 
-non open-source, ma utilizzabili di BLAS/LAPACK come Intel MKL. Questo solleva interrogativi legittimi sul valore aggiunto del software commerciale 
+non open-source, ma con licenza libera previa citazione, utilizzabili di BLAS/LAPACK come Intel MKL. Questo solleva interrogativi legittimi sul valore aggiunto del software commerciale 
 rispetto all'utilizzo diretto delle librerie open source sottostanti.
 
 Il valore di MATLAB risiede quindi non tanto nell'esclusività degli algoritmi implementati, quanto nell'integrazione di questi in un 
 ambiente coerente, ben documentato e ottimizzato per la produttività scientifica. La questione se questo valore aggiunto giustifichi il 
 costo di licenza dipende fortemente dal contesto applicativo, dalle esigenze specifiche dell'utente e dai vincoli di tempo e risorse del 
 progetto.
+Nell'ambito della ricerca, non a scopo di lucro, sviluppare uno strumento che faccia utilizzo di librerie commerciali/proprietarie e open-source potrebbe rivelarsi ragionevole.
