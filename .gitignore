@@ -3,3 +3,4 @@ matrices/
 build*/
 cmake/
 report/latex_build/
+.venv/

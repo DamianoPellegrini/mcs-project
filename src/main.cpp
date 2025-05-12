@@ -29,7 +29,7 @@ constexpr auto BLAS = "Accelerate";
 constexpr auto BLAS = "Unknown";
 #endif
 
-constexpr auto HEADER_CSV = "os, blas, numThreads, timestamp, matrixName, rows, cols, nonZeros, loadTime, loadMem, decompTime, decompMem, solveTime, solveMem, error"; 
+constexpr auto HEADER_CSV = "os,blas,numThreads,timestamp,matrixName,rows,cols,nonZeros,loadTime,loadMem,decompTime,decompMem,decompPeakMem,solveTime,solveMem,solvePeakMem,error"; 
 constexpr auto OUT_FILE = "bench.csv";
 
 #ifndef NO_SLEEP
@@ -129,7 +129,7 @@ int solveMatrixMarket(const std::filesystem::path& path) {
   auto end{ std::chrono::high_resolution_clock::now() };
   matrix_file.close();
 
-  csv_file << std::format("{}, {}, {}, {}, {}, {}, {}, {}, ", getOSName(), BLAS, getNumThreads(), timestamp, path.stem().string(), A.rows(), A.cols(), A.nonZeros());
+  csv_file << std::format("{},{},{},{},{},{},{},{},", getOSName(), BLAS, getNumThreads(), timestamp, path.stem().string(), A.rows(), A.cols(), A.nonZeros());
 
   const size_t valuesSize = A.nonZeros() * sizeof(double);
     
@@ -143,7 +143,7 @@ int solveMatrixMarket(const std::filesystem::path& path) {
   const auto loadMem = valuesSize + innerIndicesSize + outerIndicesSize;
 
   std::cerr << std::format("Matrix read took {} ms and {} bytes", loadTime, loadMem) << std::endl;
-  csv_file << std::format("{}, {}, ", loadTime, loadMem);
+  csv_file << std::format("{},{},", loadTime, loadMem);
 
   Eigen::CholmodDecomposition<SparseMatrix> solver;
 
@@ -151,6 +151,7 @@ int solveMatrixMarket(const std::filesystem::path& path) {
   A.makeCompressed();
 
   solver.cholmod().memory_allocated = 0;
+  solver.cholmod().memory_usage = 0;
   std::cerr << std::format("Decomposing matrix...") << std::endl;
   start = std::chrono::high_resolution_clock::now();
   solver.compute(A);
@@ -158,22 +159,24 @@ int solveMatrixMarket(const std::filesystem::path& path) {
   
   if (solver.info() != Eigen::Success) {
     std::cerr << "Decomposition failed." << std::endl;
-    csv_file << std::format("{}, {}, {}", "N/A", "N/A", "Decomposition failed.") << std::endl;
+    csv_file << std::format("{},{},{},{}", "N/A", "N/A", "N/A", "Decomposition failed.") << std::endl;
     csv_file.close();
     return -1;
   }
 
   const auto decompTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
   const auto decompMem = solver.cholmod().memory_allocated;
+  const auto decompPeakMem = solver.cholmod().memory_usage;
   
   std::cerr << std::format("Decomposition succeeded with in {} ms and {} bytes", decompTime, decompMem) << std::endl;
-  csv_file << std::format("{}, {}, ", decompTime, decompMem);  
+  csv_file << std::format("{},{},{},", decompTime, decompMem, decompPeakMem);  
 
   Eigen::VectorXd b(A.rows()), x(A.rows()), xe(A.rows());
   x.setOnes();
   b = A * x;
 
   solver.cholmod().memory_allocated = 0;
+  solver.cholmod().memory_usage = 0;
   std::cerr << std::format("Solving matrix...") << std::endl;
   start = std::chrono::high_resolution_clock::now();
   xe = solver.solve(b);
@@ -181,9 +184,10 @@ int solveMatrixMarket(const std::filesystem::path& path) {
 
   const auto solveTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
   const auto solveMem = solver.cholmod().memory_allocated;
+  const auto solvePeakMem = solver.cholmod().memory_usage;
 
   std::cerr << std::format("Solve took {} ms and {} bytes", solveTime, solveMem) << std::endl;
-  csv_file << std::format("{}, {}, ", solveTime, solveMem);
+  csv_file << std::format("{},{},{},", solveTime, solveMem, solvePeakMem);
 
   if (solver.info() != Eigen::Success) {
     std::cerr << "Solving failed." << std::endl;

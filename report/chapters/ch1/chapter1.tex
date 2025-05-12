@@ -85,7 +85,7 @@ la struttura interna dell'implementazione di \texttt{chol} in MATLAB.
 Dall'analisi è emerso che questa funzione utilizza internamente il pacchetto CHOLMOD (CHOLesky MODification), 
 un componente della libreria SuiteSparse \cite{SuiteSparse}. SuiteSparse rappresenta una raccolta completa e 
 altamente ottimizzata di algoritmi per l'algebra lineare sparsa, sviluppata principalmente sotto la guida 
-di Timothy A. Davis e disponibile come software open source su \href{https://github.com/DrTimothyAldenDavis/SuiteSparse}{GitHub}.
+di Timothy A. Davis e disponibile come software open source su \href{https://github.com/DrTimothyAldenDavis/SuiteSparse}{GitHub} \cite{SuiteSparse}.
 
 Per verificare empiricamente l'utilizzo di SuiteSparse in MATLAB, abbiamo applicato, con piccole modifiche, uno script diagnostico 
 che identifica le librerie matematiche sottostanti e le relative versioni tramite funzioni di debug non documentate.
@@ -108,7 +108,7 @@ L'output generato dallo script ha evidenziato le seguenti librerie:
 Approfondendo l'architettura del pacchetto CHOLMOD, abbiamo scoperto che questo si basa essenzialmente sulle librerie 
 BLAS (Basic Linear Algebra Subprograms) e LAPACK (Linear Algebra PACKage) per eseguire operazioni di algebra lineare 
 ad alte prestazioni. Ulteriori dettagli sul funzionamento di queste librerie sono consultabili presso 
-\href{https://netlib.org/blas/}{netlib.org/blas}.
+\href{https://netlib.org/blas/}{netlib.org/blas} \cite{netlib_blas} e \href{https://netlib.org/lapack/}{netlib.org/lapack} \cite{netlib_lapack}.
 
 Queste librerie esistono in diverse implementazioni, ciascuna ottimizzata per architetture hardware specifiche.
 Le implementazioni più diffuse includono OpenBLAS (ottimizzata per molteplici architetture), Apple Accelerate 
@@ -141,9 +141,9 @@ ma anche di analizzare le differenze tra le varie implementazioni di BLAS e LAPA
 
 Tempo di esecuzione:
 \begin{itemize}
-    \item \textbf{loadTime:} tempo necessario per caricare la matrice dal file in formato MATLAB (MAT) (ms)
-    \item \textbf{decompTime:} tempo per eseguire la fattorizzazione di Cholesky (ms)
-    \item \textbf{solveTime:} tempo per risolvere un sistema lineare usando i fattori (ms)
+    \item \textbf{loadTime:} tempo necessario per caricare la matrice dal file in formato MATLAB (MAT) (\unit{\milli\second})
+    \item \textbf{decompTime:} tempo per eseguire la fattorizzazione di Cholesky (\unit{\milli\second})
+    \item \textbf{solveTime:} tempo per risolvere un sistema lineare usando i fattori (\unit{\milli\second})
 \end{itemize}
 
 Per il calcolo del tempo, abbiamo utilizzato il profiler di MATLAB attraverso \texttt{profile},
@@ -151,12 +151,12 @@ che misurano il tempo di esecuzione assieme ad altre informazioni di un blocco d
 
 Utilizzo di memoria:
 \begin{itemize}
-    \item \textbf{Memoria caricamento Matrice:} memoria utilizzata per caricare la matrice (Bytes)
-    \item \textbf{Memoria fattorizzazione:} memoria utilizzata per la fattorizzazione (Bytes)
-    \item \textbf{Memoria soluzione:} memoria utilizzata per la soluzione (Bytes)
+    \item \textbf{loadMem:} memoria utilizzata per caricare la matrice (Bytes)
+    \item \textbf{decompMem:} memoria utilizzata per la fattorizzazione (Bytes)
+    \item \textbf{solveMem:} memoria utilizzata per trovare la soluzione (Bytes)
 \end{itemize}
 
-Per il calcolo della memoria, abbiamo utilizzato una funzionalità del profiler di MATLAB non documentato,
+Per il calcolo della memoria, abbiamo utilizzato una funzionalità del profiler di MATLAB non documentata,
 che permette di calcolare la memoria utilizzata in una porzione di codice. Ovviamente, essendo non documentata, non
 è garantita la sua stabilità e correttezza, ma l'abbiamo ritenuto il metodo migliore per il calcolo la memoria
 utilizzata.
