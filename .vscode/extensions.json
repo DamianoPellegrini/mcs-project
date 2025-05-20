@@ -1,6 +1,12 @@
 {
     "recommendations": [
-        "james-yu.latex-workshop",
-        "zhengrenzhe.nyan-cat"
+        "zhengrenzhe.nyan-cat",
+        "jeff-hykin.better-cpp-syntax",
+        "aaron-bond.better-comments",
+        "wraith13.bracket-lens",
+        "ms-vscode.cpptools",
+        "vivaxy.vscode-conventional-commits",
+        "myriad-dreamin.tinymist",
+        "vadimcn.vscode-lldb"
     ]
 }

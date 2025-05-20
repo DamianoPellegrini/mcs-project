@@ -1,6 +1,6 @@
 // This Typst file contains macros for generating a report with various calculations and formatting.
 
-#import "utils/plotmacros.typ": *
+// #import "utils/plotmacros.typ": *
 
 #import "packages.typ": unify
 
