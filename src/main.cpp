@@ -139,7 +139,7 @@ int solveMatrixMarket(const std::filesystem::path& path) {
   // Size of outer indices array ((outerSize+1) * sizeof(index type))
   const size_t outerIndicesSize = (A.outerSize() + 1) * sizeof(SuiteSparse_long);
 
-  const auto loadTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+  const auto loadTime = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(end - start).count();
   const auto loadMem = valuesSize + innerIndicesSize + outerIndicesSize;
 
   std::cerr << std::format("Matrix read took {} ms and {} bytes", loadTime, loadMem) << std::endl;
@@ -165,7 +165,7 @@ int solveMatrixMarket(const std::filesystem::path& path) {
     return -1;
   }
 
-  const auto decompTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+  const auto decompTime = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(end - start).count();
   const auto decompMem = solver.cholmod().memory_allocated;
   const auto decompPeakMem = solver.cholmod().memory_usage;
   
@@ -184,7 +184,7 @@ int solveMatrixMarket(const std::filesystem::path& path) {
   xe = solver.solve(b);
   end = std::chrono::high_resolution_clock::now();
 
-  const auto solveTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+  const auto solveTime = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(end - start).count();
   const auto solveMem = solver.cholmod().memory_allocated;
   const auto solvePeakMem = solver.cholmod().memory_usage;
 
