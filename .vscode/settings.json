@@ -1,5 +1,4 @@
 {
-  "latex-workshop.latex.outDir": "%WORKSPACE_FOLDER%/report/latex_build",
   "makefile.configureOnOpen": false,
   "cmake.configureOnEdit": false,
   "cmake.configureOnOpen": false,
@@ -130,4 +129,6 @@
       "binaryArgs": []
     }
   ],
+  "tinymist.exportPdf": "never",
+  "tinymist.preview.refresh": "onSave",
 }

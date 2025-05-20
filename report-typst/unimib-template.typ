@@ -19,7 +19,7 @@
   abstract: "Sommario",
 )
 
-#let sesso(
+#let unimib(
   title: [A long enough thesis title for it to wrap on a newline and show how the title wraps],
   authors: (),
   helpers: (),

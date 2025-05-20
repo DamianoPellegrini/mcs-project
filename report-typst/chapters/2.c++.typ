@@ -1,11 +1,10 @@
-#import "../packages.typ": unit
+#import "../packages.typ": unify.unit
 
 = C++
 
 == Introduzione a C++
 
-C++ rappresenta una scelta ottimale per l'implementazione di algoritmi di algebra lineare grazie alle sue caratteristiche 
-di efficienza, controllo di basso livello e supporto per la programmazione orientata agli oggetti.
+C++ rappresenta una scelta ottimale per l'implementazione di algoritmi di algebra lineare grazie alle sue caratteristiche di efficienza, controllo di basso livello e supporto per la programmazione orientata agli oggetti.
 
 Nel contesto della fattorizzazione di Cholesky, C++ ci permette di:
 - Ottimizzare le operazioni su matrici sparse di grandi dimensioni

@@ -29,7 +29,7 @@ constexpr auto BLAS = "Accelerate";
 constexpr auto BLAS = "Unknown";
 #endif
 
-constexpr auto HEADER_CSV = "os,blas,numThreads,timestamp,matrixName,rows,cols,nonZeros,loadTime,loadMem,decompTime,decompMem,decompPeakMem,solveTime,solveMem,solvePeakMem,error"; 
+constexpr auto HEADER_CSV = "os,blas,numThreads,timestamp,matrixName,rows,cols,nonZeros,loadTime,loadMem,decompTime,decompMem,decompPeakMem,solveTime,solveMem,solvePeakMem,relativeError"; 
 constexpr auto OUT_FILE = "bench.csv";
 
 #ifndef NO_SLEEP
@@ -151,6 +151,7 @@ int solveMatrixMarket(const std::filesystem::path& path) {
   A.makeCompressed();
 
   solver.cholmod().memory_allocated = 0;
+  solver.cholmod().memory_inuse = 0;
   solver.cholmod().memory_usage = 0;
   std::cerr << std::format("Decomposing matrix...") << std::endl;
   start = std::chrono::high_resolution_clock::now();
@@ -176,6 +177,7 @@ int solveMatrixMarket(const std::filesystem::path& path) {
   b = A * x;
 
   solver.cholmod().memory_allocated = 0;
+  solver.cholmod().memory_inuse = 0;
   solver.cholmod().memory_usage = 0;
   std::cerr << std::format("Solving matrix...") << std::endl;
   start = std::chrono::high_resolution_clock::now();

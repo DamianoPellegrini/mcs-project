@@ -1,28 +1,7 @@
-// #import "unimib-thesis.typ": unimib-thesis
-#import "sesso.typ": sesso
+#import "unimib-template.typ": unimib
 
-// #show: unimib-thesis.with(
-//   title: [Simulating and rendering real-time fluid surfaces by stochastically sampling frequency spectrums],
-//   author: (
-//     name: [Damiano Pellegrini],
-//     matr: [886261]
-//   ),
-//   mentor: (
-//     name: [Prof. Ciocca Gianluigi]
-//   ),
-//   co-mentors: (
-//     (name: [Prof. Marelli Davide]),
-//   ),
-//   area: [School of Sciences],
-//   department: [Department of Informatics, Systems and Communications],
-//   course: [Degree course in Computer Science],
-//   bibliography: bibliography(style: "ieee", "citations.bib"),
-//   paper-size: "a4",
-//   scholar-year: 2024,
-//   abstract: include("chapters/abstract.typ"),
-// )
-#show: sesso.with(
-  title: "Appunti - Teoria dell'Informazione e Crittografia",
+#show: unimib.with(
+  title: "Metodo del Calcolo Scientifico - Assignment 1 - Decomposizione con metodo di Cholesky",
   area: [Scuola di Scienza],
   department: [Dipartimento di Informatica, Sistemi e Comunicazione],
   course: [Corso di Scienze Informatiche],
@@ -48,5 +27,6 @@
 #include "chapters/1.matlab.typ"
 #include "chapters/2.c++.typ"
 #include "chapters/3.results.typ"
+#include "chapters/appendice.codici.typ"
 
 #set heading(numbering: none)
