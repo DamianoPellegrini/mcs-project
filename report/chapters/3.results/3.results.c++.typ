@@ -77,7 +77,7 @@
   )
 }
 
-A differenza di MATLAB, C++ è riuscito a completare tutte le matrici, inoltre avendo accesso a più informazioni, siamo andati a vedere quanti thread venissero utilizzati da BLAS.
+A differenza di MATLAB, C++ è riuscito a completare tutte le matrici, inoltre avendo accesso a più informazioni, siamo andati a vedere quanti thread in esecuzione parallela venissero utilizzati dalle varie librerie.
 
 === Threads
 
@@ -90,7 +90,7 @@ Da questi dati, si nota che è l'architettura del sistema a determinare il numer
 
 === Memoria
 
-La memoria è identica nei tre sistemi operativi, quindi non è necessario ripeterla per ciascuno. Questo dipende dal metodo di allocazione interna di CHOLMOD e ha senso, dato che la memoria è determinata principalmente dall'architettura del sistema piuttosto che dal sistema operativo.
+La memoria è identica nei tre sistemi operativi, pertanto non è necessario ripeterla nella tabella sottostante per ciascuno. Tale uniformità è dovuta al metodo di allocazione interna di CHOLMOD e risulta logica, poiché la memoria è determinata principalmente dall'architettura delle librerie piuttosto che dal sistema operativo.
 
 #let cpp_memory = filter_by_os_blas(cpp_csv_file, blas: "OpenBLAS", os: "Linux")
 
@@ -151,7 +151,7 @@ La memoria è identica nei tre sistemi operativi, quindi non è necessario ripet
   )
 })
 
-Analizzando la memoria, notiamo che l'uso maggiore avviene durante la decomposizione e il caricamento della matrice. Questo è comprensibile, poiché nel processo di risoluzione si utilizza il risultato della decomposizione. Inoltre, l'utilizzo della memoria sembra aumentare con l'incremento della dimensione della matrice.
+Dall'analisi della memoria, emerge che l'utilizzo maggiore si verifica durante la fase di decomposizione e di caricamento della matrice. Tale dato è prevedibile, considerando che il processo di risoluzione si basa sui risultati della decomposizione. Si osserva inoltre un incremento dell'utilizzo della memoria in proporzione alla dimensione della matrice.
 
 === Tempi
 
@@ -173,9 +173,9 @@ Analizzando la memoria, notiamo che l'uso maggiore avviene durante la decomposiz
   plotCPPMatrix(cpp_csv_file, key: csv_keys.solveTime, line-padding: 0.5)
 )
 
-Analizzando i tempi, notiamo che, in generale, Linux risulta più lento rispetto agli altri sistemi operativi, principalmente a causa dell'uso di WSL2. MacOS, invece, sembra essere il più veloce, anche se la differenza rispetto a Windows non è particolarmente marcata. Questo è probabilmente dovuto a un hardware superiore rispetto a quello disponibile per Windows e Linux. Inoltre, si osserva un piccolo outlier nel tempo di caricamento della matrice _parabolic_fem_ su Linux.
+Dall'analisi dei tempi invece, emerge che Linux presenta una velocità inferiore rispetto agli altri sistemi operativi, principalmente a causa dell'utilizzo di WSL2. MacOS, al contrario, risulta essere il più performante, sebbene la differenza rispetto a Windows non sia significativa. Tale risultato è probabilmente attribuibile a un hardware di livello superiore rispetto a quello disponibile per Windows e Linux. Si segnala inoltre un valore anomalo nel tempo di caricamento della matrice _parabolic_fem_ su Linux che persiste su varie run del programma.
 
-==== Riepilogo dei Tempi Compessivi
+=== Riepilogo dei Tempi Compessivi
 
 #let plotAllMatrix(data, key: none, line-padding: 0) = {
   let min = calc.inf;
@@ -213,7 +213,7 @@ Analizzando i tempi, notiamo che, in generale, Linux risulta più lento rispetto
   plotAllMatrix(cpp_csv_file, key: csv_keys.allTime, line-padding: 0.25)
 )
 
-Analizzando i tempi complessivi, come previsto, Linux risulta il più lento, mentre macOS è il più veloce. Tuttavia, nel complesso, la differenza tra i tre sistemi operativi non sembra essere significativa, il che rappresenta un buon risultato, poiché indica che la libreria CHOLMOD opera in modo simile su tutte le piattaforme e con diversi BLAS.
+In conclusione, l'analisi dei tempi complessivi conferma le aspettative: Linux su WSL2 risulta essere il sistema operativo più lento, mentre macOS si dimostra il più veloce. Tuttavia, la differenza temporale tra i tre sistemi operativi non appare significativa, il che rappresenta un risultato positivo in quanto indica che la libreria CHOLMOD opera in modo analogo su tutte le piattaforme e nonostante le diverse implementazioni di BLAS.
 
 === Errore Relativo
 
@@ -223,4 +223,4 @@ Analizzando i tempi complessivi, come previsto, Linux risulta il più lento, men
   plotAllMatrix(cpp_csv_file, key: csv_keys.relErr, line-padding: 0.5)
 )
 
-Osservando l'errore, notiamo alcune piccole differenze tra i sistemi operativi e i BLAS, ma queste non sono significative. Questo è un buon risultato, poiché indica che la libreria CHOLMOD opera in modo simile su tutte le piattaforme e con diversi BLAS. È probabile che queste differenze siano dovute ai diversi compilatori e alle loro ottimizzazioni, tranne per un outlier nella matrice _Flan_1565_ su macOS Accelerate in cui l'errore è più alto rispetto agli altri sistemi operativi e BLAS.
+Osservando l'errore, si evidenziano lievi discrepanze tra i sistemi operativi e le librerie BLAS, sebbene non rilevanti. Questo risultato è positivo, in quanto suggerisce che la libreria CHOLMOD mantenga un comportamento uniforme su diverse piattaforme e con differenti implementazioni BLAS. È plausibile che tali differenze siano attribuibili ai vari compilatori e alle loro ottimizzazioni, fatta eccezione per un valore anomalo nella matrice _Flan_1565_ su macOS Accelerate, dove l'errore risulta maggiore rispetto agli altri sistemi operativi e librerie BLAS, errore dovuto probabilmente ad arrotondamenti o troncamenti inaspettati.

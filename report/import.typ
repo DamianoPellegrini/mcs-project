@@ -27,7 +27,7 @@
   oklch(87%, 0.33, 140deg),
   oklch(75%, .1455, 140deg),
   oklch(74.05%, 0.167, 63.8deg),
-  oklch(33.58%, 0.071, 69.02deg),
+  oklch(64%, 0.087, 63.8deg),
 ))
 
 #let cetz-color-palette-9 = cetz.palette.new(colors: (
@@ -36,8 +36,8 @@
   oklch(80%, 60%, 280deg),
   oklch(100%, 100%, 30deg),
   oklch(80%, 40%, 30deg),
-  oklch(60%, 20%, 30deg),
+  oklch(80%, 40%, 60deg),
   oklch(87%, 0.33, 140deg),
-  oklch(75%, .1455, 140deg),
-  oklch(55%, 0.14, 140deg),
+  oklch(75%, .14, 140deg),
+  oklch(75%, 0.14, 170deg),
 ))

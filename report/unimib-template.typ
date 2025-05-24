@@ -114,6 +114,7 @@
   // Style bibliography
   show _std-bibliography: set text(8pt)
   set _std-bibliography(style: "ieee")
+  set cite(form: "prose")
 
   // Style math equation
   set math.equation(numbering: "(1)")

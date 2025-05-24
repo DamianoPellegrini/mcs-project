@@ -59,9 +59,9 @@ Sono state scaricate dal repository #link("https://sparse.tamu.edu/").
 
 == Considerazioni Iniziali
 
-Dato che sia MATLAB che C++ utilizzano la stessa libreria CHOLMOD, ci si aspetta che i risultati siano simili. Tuttavia, potrebbero emergere delle differenze, soprattutto a causa della versione obsoleta di MATLAB, meno aggiornata rispetto a quella di C++. Inoltre, l'uso differente delle librerie BLAS potrebbe influenzare ulteriormente i risultati.
+Dato che sia MATLAB che C++ utilizzano la stessa libreria CHOLMOD, ci si aspetta che i risultati siano simili. Tuttavia, potrebbero emergere delle differenze, soprattutto a causa della versione obsoleta di MATLAB, meno aggiornata rispetto a quella di C++. Inoltre, l'uso delle differenti librerie BLAS potrebbe influenzare ulteriormente i risultati.
 
-Prima di andare a fare il confronto tra MATLAB e C++, è necessario analizzare i risultati di MATLAB e di C++, in modo da avere un'idea di cosa aspettarsi.
+Prima di andare a fare il confronto tra MATLAB e C++, è necessario analizzare i risultati di quest'ultimi, in modo da avere un'idea di cosa aspettarsi.
 
 #include "3.results/3.results.matlab.typ"
 

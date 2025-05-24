@@ -16,7 +16,8 @@
   // flipped: true
 )
 
-#set cite(form: "prose")
+#outline(target: figure.where(kind: "code"), title: [Indice codici])
+#pagebreak(weak: true)
 
 #set heading(numbering: none)
 
@@ -28,6 +29,10 @@
 #include "chapters/2.c++.typ"
 #include "chapters/3.results.typ"
 #include "chapters/4.conclusion.typ"
+
+#counter(heading).update(0)
+#set heading(numbering: "A.i.")
+
 #include "chapters/appendice.codici.typ"
 
 #set heading(numbering: none)
