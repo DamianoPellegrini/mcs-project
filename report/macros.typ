@@ -15,7 +15,7 @@
 
 // Function to calculate the logarithm of a number
 #let log10 = x => {
-  if x == 0 {
+  if float(x) in (0, 0.0) {
     return 0
   }
   calc.log(float(x))
@@ -23,7 +23,7 @@
 
 // Function to format bytes to MB for display
 #let format_bytes_to_mb(bytes) = {
-  calc.round(int(bytes) / 1048576, digits: 2) // 1 MB = 1024 * 1024 bytes
+  calc.round(float(bytes) / 1048576, digits: 2) // 1 MB = 1024 * 1024 bytes
 }
 
 // Function to format a number in scientific notation
@@ -33,7 +33,7 @@
   if (exponent == 0) {
     return unify.num(mantissa)
   }
-  unify.num(str(mantissa) + "e" + str(exponent))
+  str(mantissa) + "e" + str(exponent)
 }
 
 #let csv_keys = (
@@ -42,6 +42,11 @@
   loadTime: "loadTime",
   decompTime: "decompTime",
   solveTime: "solveTime",
+  allMem: "allMem",
+  allNoLoadMem: "allNoLoadMem",
+  loadMem: "loadMem",
+  decompMem: "decompMem",
+  solveMem: "solveMem",
   relErr: "relativeError",
 )
 
@@ -57,6 +62,16 @@
       log10(float(dict.decompTime) / 1000)
     } else if key == csv_keys.solveTime {
       log10(float(dict.solveTime) / 1000)
+    } else if key == csv_keys.allMem {
+      log10(format_bytes_to_mb(int(dict.loadMem) + int(dict.decompMem) + int(dict.solveMem)))
+    } else if key == csv_keys.allNoLoadMem {
+      log10(format_bytes_to_mb(int(dict.decompMem) + int(dict.solveMem)))
+    } else if key == csv_keys.loadMem {
+      log10(format_bytes_to_mb(dict.loadMem))
+    } else if key == csv_keys.decompMem {
+      log10(format_bytes_to_mb(dict.decompMem))
+    } else if key == csv_keys.solveMem {
+      log10(format_bytes_to_mb(dict.solveMem))
     } else if key == csv_keys.relErr {
       log10(float(dict.relativeError))
     } else {
@@ -73,13 +88,17 @@
     min,
     max,
     sizeX: 14,
-    sizeY: 9,
+    sizeY: 8,
     line-padding: 0.5,
     plotStyle: none,
     markStyle: none,
+    legend: "inner-south-east",
+    anchor: "south-east",
+    anchorOffset: (0, 0.75em),
+    customLabel: none,
   ) = {
   import "packages.typ": cetz-plot, cetz
-  import cetz-plot: *
+  import cetz-plot: plot
   import "import.typ": cetz-color-palette
 
   if plotStyle == none {
@@ -93,7 +112,9 @@
   let min = calc.floor(min)
   let max = calc.ceil(max)
 
-  let ylabel = if key == csv_keys.allTime {
+  let ylabel = if customLabel != none {
+    customLabel
+  } else if key == csv_keys.allTime {
     [Tempo complessivo (caricamento + decomposizione + risoluzione) \[$log_(10)(s)$\]]
   } else if key == csv_keys.allNoLoadTime {
     [Tempo complessivo (decomposizione + risoluzione) \[$log_(10)(s)$\]]
@@ -103,23 +124,33 @@
     [Tempo di decomposizione \[$log_(10)(s)$\]]
   } else if key == csv_keys.solveTime {
     [Tempo di risoluzione \[$log_(10)(s)$\]]
+  } else if key == csv_keys.allMem {
+    [Memoria totale (caricamento + decomposizione + risoluzione) \[$log_(10)("MB")$\]]
+  } else if key == csv_keys.allNoLoadMem {
+    [Memoria totale (decomposizione + risoluzione) \[$log_(10)("MB")$\]]
+  } else if key == csv_keys.loadMem {
+    [Memoria di caricamento \[$log_(10)("MB")$\]]
+  } else if key == csv_keys.decompMem {
+    [Memoria di decomposizione \[$log_(10)("MB")$\]]
+  } else if key == csv_keys.solveMem {
+    [Memoria di risoluzione \[$log_(10)("MB")$\]]
   } else if key == csv_keys.relErr {
     [Errore relativo ($log_10$)]
+  } else {
+    assert(false, message: "Invalid key in createMatricesLinePlot: " + key +  " and customlabel not set")
   }
 
   return cetz.canvas({
     import cetz.draw: set-style, translate, scale, content
     import cetz.draw: set-style, translate, scale, content
     set-style(
-      legend: (fill: white, anchor: "north-west"),
+      legend: (fill: white, anchor: anchor, offset: anchorOffset),
       axes: (
         x: (
           tick: (label: (angle: 45deg, offset: 1.25em, anchor: "east")),
-          label: (anchor: "east", offset: 7em),
-          label-anchor: "mid",
         ),
         y: (
-          label: (angle: 90deg, anchor: "south-east", offset: 2.5em),
+          label: (angle: 90deg, anchor: "east", offset: 3.5em),
         ),
       ),
     )
@@ -127,6 +158,7 @@
       size: (sizeX, sizeY),
       plot-style: plotStyle,
       mark-style: markStyle,
+      legend: legend,
       x-label: none,
       y-label: ylabel,
       y-max: max + line-padding,

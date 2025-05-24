@@ -4,9 +4,9 @@ matricesNum = length(files);
 
 structArray = repmat(struct('os', string(computer('arch')), 'timestamp', "", 'exception', "None", 'matrixName', "", ...
     'matrixSize', 0, 'rows', 0, 'cols', 0, 'nonZeros', 0, ...
-    'loadTime', 0, 'loadMem', 0, ...
-    'decompTime', 0, 'decompMem', 0, ...
-    'solveTime', 0, 'solveMem', 0, 'relativeError', 0), matricesNum, 1);
+    'loadTime', 0.0, 'loadMem', 0.0, ...
+    'decompTime', 0.0, 'decompMem', 0.0, ...
+    'solveTime', 0.0, 'solveMem', 0.0, 'relativeError', 0.0), matricesNum, 1);
 
 fprintf("- Processing %d matrices...\n", matricesNum);
 
@@ -44,6 +44,13 @@ for i = 1:matricesNum
         fprintf("        - Matrix size: %d x %d\n", rows, cols);
         fprintf("        - Non-zero entries: %d\n", nonZeros);
 
+        structArray(i).loadTime = loadTime;
+        structArray(i).loadMem = loadMemAlloc + loadMemFreed;
+        structArray(i).matrixSize = aBytes;
+        structArray(i).rows = rows;
+        structArray(i).cols = cols;
+        structArray(i).nonZeros = nonZeros;
+
         % Cholesky decomposition
         fprintf("    2. Performing Cholesky decomposition with AMD Ordering ...\n");
 
@@ -66,6 +73,9 @@ for i = 1:matricesNum
             continue;
         end
 
+        structArray(i).decompTime = decompTime;
+        structArray(i).decompMem = decompMemAlloc + decompMemFreed;
+
         fprintf("      ✓ Cholesky decomposition completed (%.2f ms), Memory used (%d)\n", decompTime, decompMemAlloc + decompMemFreed);
 
         % Define expected solution
@@ -87,6 +97,9 @@ for i = 1:matricesNum
 
         fprintf("      ✓ System solved (%.2f ms)\n", solveTime);
 
+        structArray(i).solveTime = solveTime;
+        structArray(i).solveMem = solveMemAlloc + solveMemFreed;
+
         clear R;
         clear b;
 
@@ -98,17 +111,6 @@ for i = 1:matricesNum
         clear x;
         clear xe;
 
-        % Store results
-        structArray(i).loadTime = loadTime;
-        structArray(i).loadMem = loadMemAlloc + loadMemFreed;
-        structArray(i).matrixSize = aBytes;
-        structArray(i).rows = rows;
-        structArray(i).cols = cols;
-        structArray(i).nonZeros = nonZeros;
-        structArray(i).decompTime = decompTime;
-        structArray(i).decompMem = decompMemAlloc + decompMemFreed;
-        structArray(i).solveTime = solveTime;
-        structArray(i).solveMem = solveMemAlloc + solveMemFreed;
         structArray(i).relativeError = relativeError;
         structArray(i).exception = "";
     catch exception

@@ -3,6 +3,8 @@
 #show: codly.codly-init
 #codly.codly(languages: codly-languages.codly-languages)
 
+= Appendice Codici
+
 #let code-counter = counter("figure")
 #code-counter.step()
 
@@ -34,11 +36,15 @@
   )
 }
 
+== C++ e CMake
+
 #for (file, label) in cpp_files {
   createCodeBlock(file, "cpp", label)
 }
 
 #createCodeBlock("../../CMakeLists.txt", "cmake", "")
+
+== MATLAB
 
 #for (file, label) in matlab_files {
   createCodeBlock(file, "matlab", label)

@@ -27,6 +27,7 @@
 #include "chapters/1.matlab.typ"
 #include "chapters/2.c++.typ"
 #include "chapters/3.results.typ"
+#include "chapters/4.conclusion.typ"
 #include "chapters/appendice.codici.typ"
 
 #set heading(numbering: none)

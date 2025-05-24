@@ -2,6 +2,7 @@
   "makefile.configureOnOpen": false,
   "cmake.configureOnEdit": false,
   "cmake.configureOnOpen": false,
+  "editor.wordWrap": "on",
   "files.associations": {
     "__bit_reference": "cpp",
     "__hash_table": "cpp",
