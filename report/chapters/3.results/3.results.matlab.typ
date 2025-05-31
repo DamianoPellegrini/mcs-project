@@ -35,8 +35,8 @@
 }
 
 Durante l'esecuzione, due matrici hanno causato un errore interno della libreria CHOLMOD in Windows, mentre in Linux hanno provocato la terminazione forzata del processo. Di conseguenza, non sono state incluse nei risultati. Le matrici problematiche sono:
-- Flan_1565
-- StocF-1465
+- _Flan\_1565_
+- _StocF-1465_
 
 === Memoria
 
@@ -127,7 +127,7 @@ Durante l'esecuzione, due matrici hanno causato un errore interno della libreria
   }
 )
 
-Dalla tabella emerge chiaramente che il profiler di memoria di MATLAB potrebbe non essere completamente affidabile, poiché riporta valori pari a zero per il caricamento di alcune matrici e valori anomali per la decomposizione delle matrici Apache e G3\_Circuit su Linux. Questo fenomeno dei valori anomali è probabilmente dovuto alla presenza di WSL2 e all'utilizzo della libreria esterna CHOLMOD, ma dipende anche dal metodo con cui MATLAB registra l'uso della memoria. Se il profiler utilizza un approccio basato sul campionamento, allora i valori pari a zero sarebbero comprensibili.
+Dalla tabella emerge chiaramente che il profiler di memoria di MATLAB potrebbe non essere completamente affidabile, poiché riporta valori pari a zero per il caricamento di alcune matrici e valori anomali per la decomposizione delle matrici Apache e _G3\_Circuit_ su Linux. Questo fenomeno dei valori anomali è probabilmente dovuto alla presenza di WSL2 e all'utilizzo della libreria esterna CHOLMOD, ma dipende anche dal metodo con cui MATLAB registra l'uso della memoria. Se il profiler utilizza un approccio basato sul campionamento, allora i valori pari a zero sarebbero comprensibili.
 
 In generale, l'uso della memoria sembra aumentare con la dimensione della matrice e risulta maggiore per la decomposizione rispetto al caricamento e alla risoluzione.
 
@@ -168,7 +168,7 @@ In generale, l'uso della memoria sembra aumentare con la dimensione della matric
     }
 
     createMatricesLinePlot(
-      csv_keys.allTime,
+      none,
       matrices_matlab,
       osValues,
       min,
@@ -176,6 +176,7 @@ In generale, l'uso della memoria sembra aumentare con la dimensione della matric
       legend: "inner-north-west",
       anchor: "north-west",
       anchorOffset: (0.75em, -0.5em),
+      customLabel: [Tempo caricamento, decomposizione e risoluzione \[$log_(10)(s)$\]],
     )
   }
 )

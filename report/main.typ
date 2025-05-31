@@ -31,7 +31,7 @@
 #include "chapters/4.conclusion.typ"
 
 #counter(heading).update(0)
-#set heading(numbering: "A.i.")
+#set heading(numbering: "A.a.")
 
 #include "chapters/appendice.codici.typ"
 

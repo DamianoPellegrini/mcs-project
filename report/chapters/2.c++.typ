@@ -1,4 +1,7 @@
-#import "../packages.typ": unify.unit
+#import "../packages.typ": unify.unit, codly, codly-languages
+
+#show: codly.codly-init
+#codly.codly(languages: codly-languages.codly-languages, breakable: true)
 
 = C++
 
@@ -7,14 +10,19 @@
 C++ rappresenta una scelta ottimale per l'implementazione di algoritmi di algebra lineare grazie alle sue caratteristiche di efficienza, controllo di basso livello e supporto per la programmazione orientata agli oggetti.
 
 Nel contesto della fattorizzazione di Cholesky, C++ ci permette di:
-- Ottimizzare le operazioni su matrici sparse di grandi dimensioni
 - Integrare librerie specializzate per l'algebra lineare
 - Controllare precisamente l'allocazione della memoria
-- Sfruttare costrutti template per implementazioni generiche
+- Accesso al codice sorgente delle librerie per ottimizzazioni specifiche
 
 == Tool Chain C++
 
 Per lo sviluppo del nostro progetto abbiamo utilizzato diversi strumenti in base all'ambiente operativo:
+
+In comune è stato utilizzato:
+
+- *CMake*: Sistema cross-platform per la gestione del processo di build, permettendo di generare progetti 
+  Visual Studio nativi mantenendo la portabilità del codice. La configurazione CMake ha facilitato l'integrazione delle diverse 
+  librerie utilizzate nel progetto.
 
 === Ambiente Windows
 In ambiente Windows, la nostra implementazione si è basata su:
@@ -24,18 +32,12 @@ In ambiente Windows, la nostra implementazione si è basata su:
   
 - *Intel Fortran Compiler (IFX)*: Compilatore Intel per Fortran che abbiamo utilizzato per compilare alcune componenti di SuiteSparse.
 
-- *CMake*: Sistema cross-platform per la gestione del processo di build, permettendo di generare progetti 
-  Visual Studio nativi mantenendo la portabilità del codice. La configurazione CMake ha facilitato l'integrazione delle diverse 
-  librerie utilizzate nel progetto.
-
 === Ambiente Linux
 Per garantire la portabilità del codice e per effettuare test comparativi, abbiamo anche utilizzato:
 
 - *GNU Compiler Collection (GCC)*: Compilatore C++ standard in ambienti Linux, utilizzato nella versione 11.3 con pieno supporto per C++17.
   
 - *GNU Fortran (GFortran)*: Necessario per compilare alcune componenti delle librerie BLAS e LAPACK utilizzate dal progetto.
-  
-- *CMake*: Sistema cross-platform per la gestione del processo di build, permettendo di generare progetti Visual Studio nativi mantenendo la portabilità del codice. La configurazione CMake ha facilitato l'integrazione delle diverse librerie utilizzate nel progetto.
 
 === Ambiente MacOS
 Per testare un ambiente più professionale ed utilizzare una libreria proprietaria differente, ci siamo forniti di:
@@ -43,8 +45,6 @@ Per testare un ambiente più professionale ed utilizzare una libreria proprietar
 - *Apple clang (clang)*: Compilatore C++ standard in ambienti Apple MacOS, utilizzato nella versione 17.0.0 con pieno supporto per C++17.
   
 - *GNU Fortran (GFortran)*: Necessario per compilare alcune componenti delle librerie BLAS e LAPACK utilizzate dal progetto.
-  
-- *CMake*: Sistema cross-platform per la gestione del processo di build, permettendo di generare progetti Visual Studio nativi mantenendo la portabilità del codice. La configurazione CMake ha facilitato l'integrazione delle diverse librerie utilizzate nel progetto.
 
 == Librerie C++ per la fattorizzazione di Cholesky
 
@@ -245,7 +245,7 @@ Documentazione frammentata: Ogni implementazione (Intel MKL, OpenBLAS, Accelerat
 
 Difficoltà CMake: Abbiamo riscontrato notevoli difficoltà nell'integrazione attraverso CMake:
 
-Mancanza di moduli CMake standardizzati per il rilevamento delle diverse implementazioni, rendendo inefficaci i moduli standard come FindBLAS e FindLAPACK.
+Mancanza di moduli CMake aggiornati per il rilevamento delle diverse implementazioni, rendendo inefficaci i moduli standard come FindBLAS e FindLAPACK.
 Necessità di linkare manualmente le librerie specificando esattamente i percorsi e i componenti richiesti, invece di poter utilizzare i meccanismi automatizzati di CMake.
 Configurazioni diverse richieste per Windows (MKL/MSVC) e Linux (OpenBLAS/GCC).
 Conflitti di simboli: In alcuni casi, quali l'utilizzo dell'interfaccia standard ILP64 LAPACK 3.11.0 dell'implementazione di Apple Accelerate ha causato conflitti di simboli difficili da risolvere.

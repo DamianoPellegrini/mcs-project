@@ -3,11 +3,8 @@
 #show: codly.codly-init
 #codly.codly(languages: codly-languages.codly-languages, breakable: true)
 
-= Appendice Codici
-
 #let code-counter = counter("figure")
 #code-counter.step()
-
 
 #let cpp_files = (
   ("../../src/main.cpp", "Entrypoint C++"),
@@ -33,6 +30,9 @@
   pagebreak(weak: true)
 }
 
+= Codici
+
+#outline(target: figure.where(kind: "code"))
 
 == C++ e CMake
 

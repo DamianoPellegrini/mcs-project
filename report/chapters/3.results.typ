@@ -13,17 +13,17 @@ Specifiche del sistema per Windows:
 - *RAM installata*: 16 GB
 - *Archiviazione*: 238 GB SSD e 1 TB SSD Esterno
 - *Scheda grafica*: NVIDIA GeForce GTX 1060 with Max-Q Design (6 GB)
-- *Memoria Virtuale*: 7680 MB su SSD e 32768 MB su HDD Esterno
+- *Memoria Virtuale*: 7680 MB su SSD e 32768 MB su SSD Esterno
 - *Sistema operativo Windows*: Windows 10 Home
 
 Specifiche del sistema per Linux:
 
 Processore, Architettura, RAM, Archiviazione e Scheda Grafica sono gli stessi del sistema Windows.
 
-- *Memoria Virtuale*: 40448 MB su HDD Esterno
+- *Memoria Virtuale*: 40448 MB su SSD Esterno
 - *Sistema operativo Linux*: WSL 2 con Ubuntu 25.04
 
-La memoria virtuale era possibile averla solo su un solo disco, quindi è stata scelta (per mancanza di spazio) quella dell'HDD esterno.
+La memoria virtuale era possibile averla solo su un solo disco, quindi è stata scelta (per mancanza di spazio) quella dell'SSD esterno.
 
 Specifiche del sistema per MacOS:
 
@@ -34,6 +34,14 @@ Specifiche del sistema per MacOS:
 - *Scheda grafica*: Apple M1 Pro GPU (16 core)
 - *Memoria Virtuale*: 56 GB su SSD
 - *Sistema operativo*: MacOS Sonoma 15.4
+
+== Versioni delle librerie
+Le versioni delle librerie utilizzate sono:
+- *MATLAB*: 24.2.0.2923080 (R2024b)
+- *SuiteSparse*: v7.10.3 (May 5, 2025) (CHOLMOD 5.3.2)
+- *BLAS*: OpenBLAS 0.3.39 (12/01/2025) e Intel MKL 2025.1 (31/3/2025)
+- *Eigen*: nightly version (02/05/2025)
+- *Fast Matrix Market* latest github commit (03/01/2024)
 
 == Matrici analizzate
 

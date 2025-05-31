@@ -56,9 +56,11 @@ fi
 # Navigate back to root directory
 cd ..
 
-# Add OpenBLAS to path
-echo "Adding OpenBLAS to PATH..."
-export LD_LIBRARY_PATH="$PWD/cmake/openblas/lib:$LD_LIBRARY_PATH"
+if [ "$(uname)" = "Linux" ]; then
+    # Add OpenBLAS to path
+    echo "Adding OpenBLAS to PATH..."
+    export LD_LIBRARY_PATH="$PWD/cmake/openblas/lib:$LD_LIBRARY_PATH"
+fi
 
 # Run the MKL version
 echo "Waiting 5 seconds before running $BLAS version..."

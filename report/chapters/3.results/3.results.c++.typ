@@ -77,7 +77,7 @@
   )
 }
 
-A differenza di MATLAB, C++ è riuscito a completare tutte le matrici, inoltre avendo accesso a più informazioni, siamo andati a vedere quanti thread in esecuzione parallela venissero utilizzati dalle varie librerie.
+A differenza di MATLAB, C++ è riuscito a completare tutte le matrici, inoltre avendo accesso a più informazioni, siamo andati a vedere quanti thread in esecuzione parallela venissero utilizzati dalle varie librerie BLAS.
 
 === Threads
 
@@ -90,7 +90,7 @@ Da questi dati, si nota che è l'architettura del sistema a determinare il numer
 
 === Memoria
 
-La memoria è identica nei tre sistemi operativi, pertanto non è necessario ripeterla nella tabella sottostante per ciascuno. Tale uniformità è dovuta al metodo di allocazione interna di CHOLMOD e risulta logica, poiché la memoria è determinata principalmente dall'architettura delle librerie piuttosto che dal sistema operativo.
+La memoria è identica nei tre sistemi operativi, pertanto non è necessario ripeterla nella tabella sottostante per ciascuno. Tale uniformità è dovuta al metodo di allocazione interna di CHOLMOD e risulta logica, poiché la memoria è determinata principalmente dall'architettura del sistema piuttosto che dal sistema operativo.
 
 #let cpp_memory = filter_by_os_blas(cpp_csv_file, blas: "OpenBLAS", os: "Linux")
 

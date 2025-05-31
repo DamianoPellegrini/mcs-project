@@ -17,8 +17,6 @@ endif()
 
 project(MCS-Project LANGUAGES C CXX Fortran)
 
-message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
-
 # Define directories
 set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 set(LIB_DIR "${CMAKE_SOURCE_DIR}/lib")
@@ -36,22 +34,8 @@ set(SUITESPARSE_DIR "${LIB_DIR}/suitesparse")
 
 # Proper clean targets
 add_custom_target(clean-src
-	COMMAND ${CMAKE_COMMAND} -E remove_directory ${BASE_OBJ_DIR}
 	COMMAND ${CMAKE_COMMAND} -E remove_directory ${BIN_DIR}
 	COMMENT "Cleaning object files and main executable"
-)
-
-add_custom_target(clean-lib
-	COMMAND ${CMAKE_COMMAND} -E remove_directory ${BASE_OBJ_DIR}/suitesparse_main-prefix
-	COMMAND ${CMAKE_COMMAND} -E remove_directory ${BASE_OBJ_DIR}/suitesparse_openblas-prefix
-	COMMAND ${CMAKE_COMMAND} -E remove_directory ${BASE_OBJ_DIR}/suitesparse_main
-	COMMAND ${CMAKE_COMMAND} -E remove_directory ${BASE_OBJ_DIR}/suitesparse_openblas
-	COMMENT "Cleaning SuiteSparse libraries"
-)
-
-add_custom_target(clean-all
-	DEPENDS clean-src clean-lib
-	COMMENT "Cleaning everything (sources and libraries)"
 )
 
 # Configure library paths based on platform
