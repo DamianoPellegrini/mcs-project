@@ -20,36 +20,36 @@ Per lo sviluppo del nostro progetto abbiamo utilizzato diversi strumenti in base
 
 In comune è stato utilizzato:
 
-- *CMake*: Sistema cross-platform per la gestione del processo di build, permettendo di generare progetti 
-  Visual Studio nativi mantenendo la portabilità del codice. La configurazione CMake ha facilitato l'integrazione delle diverse 
+- *CMake*: Sistema cross-platform per la gestione del processo di build, permettendo di generare progetti
+  Visual Studio nativi mantenendo la portabilità del codice. La configurazione CMake ha facilitato l'integrazione delle diverse
   librerie utilizzate nel progetto.
 
 === Ambiente Windows
 In ambiente Windows, la nostra implementazione si è basata su:
 
-- *Microsoft Visual C++ (MSVC)*: Il compilatore ufficiale di Microsoft che offre ottimizzazioni specifiche per 
+- *Microsoft Visual C++ (MSVC)*: Il compilatore ufficiale di Microsoft che offre ottimizzazioni specifiche per
   architetture Intel/AMD.
-  
+
 - *Intel Fortran Compiler (IFX)*: Compilatore Intel per Fortran che abbiamo utilizzato per compilare alcune componenti di SuiteSparse.
 
 === Ambiente Linux
 Per garantire la portabilità del codice e per effettuare test comparativi, abbiamo anche utilizzato:
 
 - *GNU Compiler Collection (GCC)*: Compilatore C++ standard in ambienti Linux, utilizzato nella versione 11.3 con pieno supporto per C++17.
-  
+
 - *GNU Fortran (GFortran)*: Necessario per compilare alcune componenti delle librerie BLAS e LAPACK utilizzate dal progetto.
 
 === Ambiente MacOS
 Per testare un ambiente più professionale ed utilizzare una libreria proprietaria differente, ci siamo forniti di:
 
 - *Apple clang (clang)*: Compilatore C++ standard in ambienti Apple MacOS, utilizzato nella versione 17.0.0 con pieno supporto per C++17.
-  
+
 - *GNU Fortran (GFortran)*: Necessario per compilare alcune componenti delle librerie BLAS e LAPACK utilizzate dal progetto.
 
 == Librerie C++ per la fattorizzazione di Cholesky
 
 === SuiteSparse
-SuiteSparse fornisce algoritmi altamente ottimizzati per matrici sparse. In particolare, abbiamo integrato CHOLMOD (con le sue dipendenze), 
+SuiteSparse fornisce algoritmi altamente ottimizzati per matrici sparse. In particolare, abbiamo integrato CHOLMOD (con le sue dipendenze),
 la componente specializzata per la fattorizzazione di Cholesky di matrici sparse simmetriche definite positive, con licenza GNU LGPL.
 
 CHOLMOD offre prestazioni superiori rispetto altre implementazioni per matrici di grandi dimensioni grazie a:
@@ -60,32 +60,32 @@ CHOLMOD offre prestazioni superiori rispetto altre implementazioni per matrici d
 - Gestione ottimizzata della memoria che riduce il sovraccarico per matrici molto sparse
 
 === Eigen
-Eigen è una libreria C++ header-only di algebra lineare ad alte prestazioni, completamente sviluppata in template 
+Eigen è una libreria C++ header-only di algebra lineare ad alte prestazioni, completamente sviluppata in template
 per massimizzare l'ottimizzazione in fase di compilazione, con licenza MPL2.
 
-Una caratteristica distintiva di Eigen è la sua architettura estensibile che permette 
-l'integrazione con diverse librerie esterne specializzate. Nel nostro progetto, 
+Una caratteristica distintiva di Eigen è la sua architettura estensibile che permette
+l'integrazione con diverse librerie esterne specializzate. Nel nostro progetto,
 abbiamo scelto di utilizzare l'interfaccia con CHOLMOD di SuiteSparse:
 
-- *Interfaccia CHOLMOD*: Abbiamo sfruttato principalmente il modulo `CholmodSupport` di Eigen che 
-  permette di utilizzare gli algoritmi avanzati di CHOLMOD mantenendo la sintassi familiare di Eigen. 
-  
-- *Alternative considerate*: Sarebbe stato possibile utilizzare l'implementazione nativa di Eigen 
-  (`SimplicialLLT`) con o senza supporto BLAS/LAPACK, che risulta adeguata per matrici di dimensioni moderate, 
+- *Interfaccia CHOLMOD*: Abbiamo sfruttato principalmente il modulo `CholmodSupport` di Eigen che
+  permette di utilizzare gli algoritmi avanzati di CHOLMOD mantenendo la sintassi familiare di Eigen.
+
+- *Alternative considerate*: Sarebbe stato possibile utilizzare l'implementazione nativa di Eigen
+  (`SimplicialLLT`) con o senza supporto BLAS/LAPACK, che risulta adeguata per matrici di dimensioni moderate,
   ma dato che volevamo basarci sull'implementazione di MATLAB abbiamo optato per l'altra strada.
-  
-- *Alternative proprietarie*: Eigen supporta anche interfacce verso librerie proprietarie come Pardiso di Intel oneAPI e 
+
+- *Alternative proprietarie*: Eigen supporta anche interfacce verso librerie proprietarie come Pardiso di Intel oneAPI e
   Accelerate di Apple, che offrono implementazioni altamente ottimizzate ma non open-source.
 
 Per la fattorizzazione di Cholesky, il nostro approccio primario è stato:
-`CholmodSupport::CholmodDecomposition` che delega il calcolo effettivo a CHOLMOD, beneficiando degli algoritmi di ordinamento 
+`CholmodSupport::CholmodDecomposition` che delega il calcolo effettivo a CHOLMOD, beneficiando degli algoritmi di ordinamento
 avanzati e dell'ottimizzazione per sistemi multi-core e scegliendo in automatico che algoritmo di ordinamento usare e che tipo di fattorizzazione
 (supermodal vs simplicial).
 
 La flessibilità di Eigen ci ha permesso di integrare efficacemente la potenza di CHOLMOD mantenendo un'interfaccia coerente e familiare nel codice principale, senza compromettere l'approccio open-source del progetto.
 
 === Fast Matrix Market
-Per la lettura delle matrici sparse dal formato Matrix Market (MTX), abbiamo integrato la libreria Fast Matrix Market, con licenza BSD-2. 
+Per la lettura delle matrici sparse dal formato Matrix Market (MTX), abbiamo integrato la libreria Fast Matrix Market, con licenza BSD-2.
 Questa libreria ha consentito di importare efficientemente dataset di test di grandi dimensioni.
 
 Fast Matrix Market si distingue per:
@@ -96,13 +96,13 @@ Fast Matrix Market si distingue per:
 
 == Librerie BLAS e LAPACK
 
-Le librerie BLAS (Basic Linear Algebra Subprograms) e LAPACK (Linear Algebra PACKage) rappresentano fondamenti essenziali per l'algebra 
-lineare computazionale. Queste librerie standardizzate forniscono implementazioni ottimizzate di operazioni matriciali e vettoriali 
+Le librerie BLAS (Basic Linear Algebra Subprograms) e LAPACK (Linear Algebra PACKage) rappresentano fondamenti essenziali per l'algebra
+lineare computazionale. Queste librerie standardizzate forniscono implementazioni ottimizzate di operazioni matriciali e vettoriali
 di base che costituiscono i blocchi fondamentali per algoritmi più complessi, inclusa la fattorizzazione di Cholesky.
 
 === Intel MKL
 
-Intel Math Kernel Library (MKL) rappresenta l'implementazione commerciale di riferimento per BLAS e LAPACK, sviluppata e ottimizzata 
+Intel Math Kernel Library (MKL) rappresenta l'implementazione commerciale di riferimento per BLAS e LAPACK, sviluppata e ottimizzata
 specificamente per processori Intel. Questa libreria offre prestazioni eccezionali su architetture x86 e x86-64 grazie a:
 
 - Ottimizzazioni a livello di microarchitettura che sfruttano set di istruzioni specifici (AVX, AVX2, AVX-512)
@@ -112,7 +112,7 @@ specificamente per processori Intel. Questa libreria offre prestazioni ecceziona
 
 === OpenBLAS
 
-OpenBLAS rappresenta l'alternativa open source più matura a Intel MKL, offrendo prestazioni competitive su diverse architetture hardware. 
+OpenBLAS rappresenta l'alternativa open source più matura a Intel MKL, offrendo prestazioni competitive su diverse architetture hardware.
 Questa libreria deriva dal progetto GotoBLAS2 e si distingue per:
 
 - Ottimizzazioni specifiche per diverse architetture (Intel, AMD, ARM, POWER)
@@ -134,12 +134,12 @@ Caratteristiche distintive di Accelerate includono:
 
 == Implementazione in C++
 
-=== Considerazioni generali 
+=== Considerazioni generali
 
 Avendo accesso al codice sorgente volendo è possibile adattare il codice alla risoluzione di un problema specifico,
 nel nostro caso abbiamo mantenuto un implementazione piuttosto generica, date le diverse matrici da trattare.
 
-=== Parametri analizzati 
+=== Parametri analizzati
 
 A differenza di MATLAB, andiamo a ottenere anche il tipo di BLAS e il numero di thread utilizzati per l'esecuzione,
 nello specifico abbiamo misurato:
@@ -188,9 +188,9 @@ Accuratezza:
 
 - Errore Relativo: errore relativo della soluzione calcolata rispetto alla soluzione attesa
 
-Per ridurre l'errore nel calcolo dell'errore evitando il calcolo una delle due radici, abbiamo ricavato la seguente formula: $ sqrt( (norm(x - x_e)^2) / (norm(x)^2) ) = (norm(x - x_e)_2) / (norm(x)_2) $
+Per ridurre l'errore nel calcolo dell'errore evitando il calcolo una delle due radici, abbiamo ricavato la seguente formula: $ sqrt((norm(x - x_e)^2) / (norm(x)^2)) = (norm(x - x_e)_2) / (norm(x)_2) $
 
-Dove dato $ (norm(x - x_e)_2) / (norm(x)_2) = (sqrt((x - x_e) dot (x - x_e)))/(sqrt(x dot x)) $ con $dot$ prodotto scalare tra vettori, ho che $ (norm(x - x_e)^2)/(norm(x)^2) = ((x - x_e) dot (x - x_e))/(x dot x) $ ovvero le somme delle componenti del vettore al quadrato.
+Dove dato $ (norm(x - x_e)_2) / (norm(x)_2) = (sqrt((x - x_e) dot (x - x_e))) / (sqrt(x dot x)) $ con $dot$ prodotto scalare tra vettori, ho che $ (norm(x - x_e)^2) / (norm(x)^2) = ((x - x_e) dot (x - x_e)) / (x dot x) $ ovvero le somme delle componenti del vettore al quadrato.
 
 === Implementazione della fattorizzazione di Cholesky
 

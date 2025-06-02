@@ -16,17 +16,17 @@
   ("../../matlab/sparse_lib_versions.m", "MATLAB Sparse librares info"),
 )
 
-#let createCodeBlock(file, language, label) = {
+#let createCodeBlock(file, language, filelabel) = {
   let code = read(file)
   code = code.replace("loadMem,", "loadMem,\n")
   let fileName = file.split("/").last()
   show figure: set block(breakable: true)
-  figure(
-    caption: [#label. File: #fileName],
-    supplement: [Codice],
-    kind: "code",
-    raw(code, block: true, lang: language, tab-size: 2),
-  )
+  [#figure(
+      caption: [#filelabel. File: #fileName],
+      supplement: [Codice],
+      kind: "code",
+      raw(code, block: true, lang: language, tab-size: 2),
+    ) #label(fileName)]
   pagebreak(weak: true)
 }
 

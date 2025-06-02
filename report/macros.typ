@@ -8,9 +8,11 @@
 #let filter_by_os_blas(data, matrix_name: none, blas: none, os: none) = {
   assert(type(data) == array, message: "Data must be an array")
 
-  return data.filter(row => ((matrix_name == none or matrix_name == row.matrix)
-    and (blas == none or blas == row.blas)
-    and (os == none or os == row.os)))
+  return data.filter(row => (
+    (matrix_name == none or matrix_name == row.matrix)
+      and (blas == none or blas == row.blas)
+      and (os == none or os == row.os)
+  ))
 }
 
 // Function to calculate the logarithm of a number
@@ -29,13 +31,14 @@
 // Function to format a number in scientific notation
 #let format-scientific = x => {
   let exponent = calc.floor(log10(calc.abs(x)))
-  let mantissa = calc.round(x / (calc.pow(10,exponent)), digits: 2)
+  let mantissa = calc.round(x / (calc.pow(10, exponent)), digits: 2)
   if (exponent == 0) {
     return unify.num(mantissa)
   }
   str(mantissa) + "e" + str(exponent)
 }
 
+// Enum used to access these values from CSV
 #let csv_keys = (
   allTime: "allTime",
   allNoLoadTime: "allTimeNoLoad",
@@ -50,53 +53,59 @@
   relErr: "relativeError",
 )
 
-// Function to retrieve a value from a dictionary based on a key
+// Label for plots based on CSV enum values
+#let ylabels = (
+  allTime: [Tempo complessivo (caricamento + decomposizione + risoluzione) \[$log_(10)(s)$\]],
+  allTimeNoLoad: [Tempo complessivo (decomposizione + risoluzione) \[$log_(10)(s)$\]],
+  loadTime: [Tempo di caricamento \[$log_(10)(s)$\]],
+  decompTime: [Tempo di decomposizione \[$log_(10)(s)$\]],
+  solveTime: [Tempo di risoluzione \[$log_(10)(s)$\]],
+  allMem: [Memoria totale (caricamento + decomposizione + risoluzione) \[$log_(10)("MB")$\]],
+  allNoLoadMem: [Memoria totale (decomposizione + risoluzione) \[$log_(10)("MB")$\]],
+  loadMem: [Memoria di caricamento \[$log_(10)("MB")$\]],
+  decompMem: [Memoria di decomposizione \[$log_(10)("MB")$\]],
+  solveMem: [Memoria di risoluzione \[$log_(10)("MB")$\]],
+  relativeError: [Errore relativo ($log_10$)],
+)
+
+// Data extractor functions from dicts based on CSV enum values
+#let dictExtractorCSV = (
+  allTime: dict => log10((float(dict.loadTime) + float(dict.decompTime) + float(dict.solveTime)) / 1000),
+  allTimeNoLoad: dict => log10((float(dict.decompTime) + float(dict.solveTime)) / 1000),
+  loadTime: dict => log10(float(dict.loadTime) / 1000),
+  decompTime: dict => log10(float(dict.decompTime) / 1000),
+  solveTime: dict => log10(float(dict.solveTime) / 1000),
+  allMem: dict => log10(format_bytes_to_mb(int(dict.loadMem) + int(dict.decompMem) + int(dict.solveMem))),
+  allNoLoadMem: dict => log10(format_bytes_to_mb(int(dict.decompMem) + int(dict.solveMem))),
+  loadMem: dict => log10(format_bytes_to_mb(dict.loadMem)),
+  decompMem: dict => log10(format_bytes_to_mb(dict.decompMem)),
+  solveMem: dict => log10(format_bytes_to_mb(dict.solveMem)),
+  relativeError: dict => log10(float(dict.relativeError)),
+)
+
+// Function to retrieve a value from a dictionary based on a CSV enum value
 #let getValFromDictCSV = (dict, key) => {
-    let val = if key == csv_keys.allTime {
-      log10((float(dict.loadTime) + float(dict.decompTime) + float(dict.solveTime)) / 1000)
-    } else if key == csv_keys.allNoLoadTime {
-      log10((float(dict.decompTime) + float(dict.solveTime)) / 1000)
-    } else if key == csv_keys.loadTime {
-      log10(float(dict.loadTime) / 1000)
-    } else if key == csv_keys.decompTime{
-      log10(float(dict.decompTime) / 1000)
-    } else if key == csv_keys.solveTime {
-      log10(float(dict.solveTime) / 1000)
-    } else if key == csv_keys.allMem {
-      log10(format_bytes_to_mb(int(dict.loadMem) + int(dict.decompMem) + int(dict.solveMem)))
-    } else if key == csv_keys.allNoLoadMem {
-      log10(format_bytes_to_mb(int(dict.decompMem) + int(dict.solveMem)))
-    } else if key == csv_keys.loadMem {
-      log10(format_bytes_to_mb(dict.loadMem))
-    } else if key == csv_keys.decompMem {
-      log10(format_bytes_to_mb(dict.decompMem))
-    } else if key == csv_keys.solveMem {
-      log10(format_bytes_to_mb(dict.solveMem))
-    } else if key == csv_keys.relErr {
-      log10(float(dict.relativeError))
-    } else {
-      assert(false, message: "Invalid key in getValFromDictCSV: " + key)
-    }
-    return val
+  assert(key in dictExtractorCSV, message: ("Invalid key in getValFromDictCSV:", key).join(" "))
+  let extractor = dictExtractorCSV.at(key)
+  extractor(dict)
 }
 
-
 #let createMatricesLinePlot(
-    key,
-    matrices,
-    data,
-    min,
-    max,
-    sizeX: 14,
-    sizeY: 8,
-    line-padding: 0.5,
-    plotStyle: none,
-    markStyle: none,
-    legend: "inner-south-east",
-    anchor: "south-east",
-    anchorOffset: (0, 0.75em),
-    customLabel: none,
-  ) = {
+  key,
+  matrices,
+  data,
+  min,
+  max,
+  sizeX: 14,
+  sizeY: 8,
+  line-padding: 0.5,
+  plotStyle: none,
+  markStyle: none,
+  legend: "inner-south-east",
+  anchor: "south-east",
+  anchorOffset: (0, 0.75em),
+  customLabel: none,
+) = {
   import "packages.typ": cetz-plot, cetz
   import cetz-plot: plot
   import "import.typ": cetz-color-palette
@@ -114,43 +123,26 @@
 
   let ylabel = if customLabel != none {
     customLabel
-  } else if key == csv_keys.allTime {
-    [Tempo complessivo (caricamento + decomposizione + risoluzione) \[$log_(10)(s)$\]]
-  } else if key == csv_keys.allNoLoadTime {
-    [Tempo complessivo (decomposizione + risoluzione) \[$log_(10)(s)$\]]
-  } else if key == csv_keys.loadTime {
-    [Tempo di caricamento \[$log_(10)(s)$\]]
-  } else if key == csv_keys.decompTime {
-    [Tempo di decomposizione \[$log_(10)(s)$\]]
-  } else if key == csv_keys.solveTime {
-    [Tempo di risoluzione \[$log_(10)(s)$\]]
-  } else if key == csv_keys.allMem {
-    [Memoria totale (caricamento + decomposizione + risoluzione) \[$log_(10)("MB")$\]]
-  } else if key == csv_keys.allNoLoadMem {
-    [Memoria totale (decomposizione + risoluzione) \[$log_(10)("MB")$\]]
-  } else if key == csv_keys.loadMem {
-    [Memoria di caricamento \[$log_(10)("MB")$\]]
-  } else if key == csv_keys.decompMem {
-    [Memoria di decomposizione \[$log_(10)("MB")$\]]
-  } else if key == csv_keys.solveMem {
-    [Memoria di risoluzione \[$log_(10)("MB")$\]]
-  } else if key == csv_keys.relErr {
-    [Errore relativo ($log_10$)]
   } else {
-    assert(false, message: "Invalid key in createMatricesLinePlot: " + key +  " and customlabel not set")
+    assert(
+      key in ylabels,
+      message: ("Invalid key in createMatricesLinePlot:", key, "and customlabel not set").join(" "),
+    )
+    ylabels.at(key)
   }
 
   return cetz.canvas({
     import cetz.draw: set-style, translate, scale, content
-    import cetz.draw: set-style, translate, scale, content
     set-style(
-      legend: (fill: white, anchor: anchor, offset: anchorOffset),
+      legend: (fill: white.transparentize(15%), anchor: anchor, offset: anchorOffset),
       axes: (
         x: (
           tick: (label: (angle: 45deg, offset: 1.25em, anchor: "east")),
+          grid: (stoke: 1pt + black.transparentize(90%)),
         ),
         y: (
           label: (angle: 90deg, anchor: "east", offset: 3.5em),
+          grid: (stoke: 1pt + black.transparentize(99%)),
         ),
       ),
     )
@@ -170,10 +162,9 @@
       x-tick-step: none,
       x-ticks: matrices.enumerate().map(((idx, name)) => (idx, name)),
       axis-style: "left",
+      x-grid: true,
+      y-grid: true,
       {
-        plot.add-vline(..range(0, matrices.len()), style: (stroke: (paint: black.transparentize(90%))))
-        plot.add-hline(..range(min + 1, max), style: (stroke: (paint: black.transparentize(90%))))
-
         for (label, values) in data {
           plot.add(values.enumerate(), mark: "o", label: label)
         }

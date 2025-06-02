@@ -1,4 +1,11 @@
-#import "../../import.typ": matlab_linux_csv_file, matlab_win_csv_file, cpp_csv_file, cetz-color-palette, cetz-color-palette-8, matrices_cpp
+#import "../../import.typ": (
+  matlab_linux_csv_file,
+  matlab_win_csv_file,
+  cpp_csv_file,
+  cetz-color-palette,
+  cetz-color-palette-8,
+  matrices_cpp,
+)
 
 #import "../../macros.typ": *
 
@@ -6,8 +13,8 @@
 
 // Matrix nelle x, error e tempo complessivo,
 #let plotCPPLoadMatrix(data, line-padding: 0) = {
-  let min = calc.inf;
-  let max = -calc.inf;
+  let min = calc.inf
+  let max = -calc.inf
 
   let osSeparated = (:) // os: values
   let osSeparatedFinal = (:) // os: values
@@ -31,10 +38,10 @@
   }
 
   for (key, values) in osSeparated {
-      for (m, value) in values {
-        let sum = value.fold(0, (acc, x) => acc + x)
-        osSeparatedFinal.at(key).push(sum / value.len())
-      }
+    for (m, value) in values {
+      let sum = value.fold(0, (acc, x) => acc + x)
+      osSeparatedFinal.at(key).push(sum / value.len())
+    }
   }
 
   createMatricesLinePlot(
@@ -48,8 +55,8 @@
 
 // Matrix nelle x, error e tempo complessivo,
 #let plotCPPMatrix(data, key: csv_keys.allTime, line-padding: 0) = {
-  let min = calc.inf;
-  let max = -calc.inf;
+  let min = calc.inf
+  let max = -calc.inf
 
   let osBlasSeparated = (:) // blas: values
 
@@ -116,40 +123,41 @@ La memoria è identica nei tre sistemi operativi, pertanto non è necessario rip
 #figure(
   caption: [Confronto utilizzo memoria tra sistemi operativi su C++],
   {
-  let key = csv_keys.allMem
-  let min = calc.inf;
-  let max = -calc.inf;
+    let key = csv_keys.allMem
+    let min = calc.inf
+    let max = -calc.inf
 
-  let osValues = (:) // data: values
+    let osValues = (:) // data: values
 
-  osValues.insert("loadMem", ())
-  osValues.insert("decompMem", ())
-  osValues.insert("solveMem", ())
+    osValues.insert("loadMem", ())
+    osValues.insert("decompMem", ())
+    osValues.insert("solveMem", ())
 
-  for it in cpp_memory {
-    for key in (
-      csv_keys.loadMem,
-      csv_keys.decompMem,
-      csv_keys.solveMem,
-    ) {
-      let val = getValFromDictCSV(it, key)
+    for it in cpp_memory {
+      for key in (
+        csv_keys.loadMem,
+        csv_keys.decompMem,
+        csv_keys.solveMem,
+      ) {
+        let val = getValFromDictCSV(it, key)
 
-      min = calc.min(min, val)
-      max = calc.max(max, val)
+        min = calc.min(min, val)
+        max = calc.max(max, val)
 
-      osValues.at(key).push(val)
+        osValues.at(key).push(val)
+      }
     }
-  }
 
-  createMatricesLinePlot(
-    none,
-    matrices_cpp,
-    osValues,
-    min,
-    max,
-    customLabel: [Memoria caricamento, decomposizione e risoluzione \[$log_(10)("MB")$\]]
-  )
-})
+    createMatricesLinePlot(
+      none,
+      matrices_cpp,
+      osValues,
+      min,
+      max,
+      customLabel: [Memoria caricamento, decomposizione e risoluzione \[$log_(10)("MB")$\]],
+    )
+  },
+)
 
 Dall'analisi della memoria, emerge che l'utilizzo maggiore si verifica durante la fase di decomposizione e di caricamento della matrice. Tale dato è prevedibile, considerando che il processo di risoluzione si basa sui risultati della decomposizione. Si osserva inoltre un incremento dell'utilizzo della memoria in proporzione alla dimensione della matrice.
 
@@ -158,19 +166,19 @@ Dall'analisi della memoria, emerge che l'utilizzo maggiore si verifica durante l
 #figure(
   caption: [Confronto tempo di caricamento tra sistemi operativi su C++],
   gap: 0.9em,
-  plotCPPLoadMatrix(cpp_csv_file, line-padding: 0.5)
+  plotCPPLoadMatrix(cpp_csv_file, line-padding: 0.5),
 )
 
 #figure(
   caption: [Confronto tempo di decomposizione tra sistemi operativi e BLAS su C++],
   gap: 0.9em,
-  plotCPPMatrix(cpp_csv_file, key: csv_keys.decompTime, line-padding: 0.5)
+  plotCPPMatrix(cpp_csv_file, key: csv_keys.decompTime, line-padding: 0.5),
 )
 
 #figure(
   caption: [Confronto tempo di risoluzione tra sistemi operativi e BLAS su C++],
   gap: 0.9em,
-  plotCPPMatrix(cpp_csv_file, key: csv_keys.solveTime, line-padding: 0.5)
+  plotCPPMatrix(cpp_csv_file, key: csv_keys.solveTime, line-padding: 0.5),
 )
 
 Dall'analisi dei tempi invece, emerge che Linux presenta una velocità inferiore rispetto agli altri sistemi operativi, principalmente a causa dell'utilizzo di WSL2. MacOS, al contrario, risulta essere il più performante, sebbene la differenza rispetto a Windows non sia significativa. Tale risultato è probabilmente attribuibile a un hardware di livello superiore rispetto a quello disponibile per Windows e Linux. Si segnala inoltre un valore anomalo nel tempo di caricamento della matrice _parabolic_fem_ su Linux che persiste su varie run del programma.
@@ -178,8 +186,8 @@ Dall'analisi dei tempi invece, emerge che Linux presenta una velocità inferiore
 === Riepilogo dei Tempi Compessivi
 
 #let plotAllMatrix(data, key: none, line-padding: 0) = {
-  let min = calc.inf;
-  let max = -calc.inf;
+  let min = calc.inf
+  let max = -calc.inf
 
   let osBlasSeparated = (:)
 
@@ -210,7 +218,7 @@ Dall'analisi dei tempi invece, emerge che Linux presenta una velocità inferiore
 #figure(
   caption: [Confronto tempo complessivo tra sistemi operativi e BLAS su C++],
   gap: 0.9em,
-  plotAllMatrix(cpp_csv_file, key: csv_keys.allTime, line-padding: 0.25)
+  plotAllMatrix(cpp_csv_file, key: csv_keys.allTime, line-padding: 0.25),
 )
 
 In conclusione, l'analisi dei tempi complessivi conferma le aspettative: Linux su WSL2 risulta essere il sistema operativo più lento, mentre macOS si dimostra il più veloce. Tuttavia, la differenza temporale tra i tre sistemi operativi non appare significativa, il che rappresenta un risultato positivo in quanto indica che la libreria CHOLMOD opera in modo analogo su tutte le piattaforme e nonostante le diverse implementazioni di BLAS.
@@ -220,7 +228,7 @@ In conclusione, l'analisi dei tempi complessivi conferma le aspettative: Linux s
 #figure(
   caption: [Confronto errore relativo tra sistemi operativi e BLAS su C++],
   gap: 0.9em,
-  plotAllMatrix(cpp_csv_file, key: csv_keys.relErr, line-padding: 0.5)
+  plotAllMatrix(cpp_csv_file, key: csv_keys.relErr, line-padding: 0.5),
 )
 
 Osservando l'errore, si evidenziano lievi discrepanze tra i sistemi operativi e le librerie BLAS, sebbene non rilevanti. Questo risultato è positivo, in quanto suggerisce che la libreria CHOLMOD mantenga un comportamento uniforme su diverse piattaforme e con differenti implementazioni BLAS. È plausibile che tali differenze siano attribuibili ai vari compilatori e alle loro ottimizzazioni, fatta eccezione per un valore anomalo nella matrice _Flan_1565_ su macOS Accelerate, dove l'errore risulta maggiore rispetto agli altri sistemi operativi e librerie BLAS, errore dovuto probabilmente ad arrotondamenti o troncamenti inaspettati.

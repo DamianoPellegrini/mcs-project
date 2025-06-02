@@ -21,7 +21,7 @@ MATLAB implementa la fattorizzazione di Cholesky attraverso la funzione built-in
 
 $ R = "chol"(A) $
 
-Dove: 
+Dove:
 - $A$ è una matrice simmetrica definita positiva (ovvero una matrice per cui tutti gli autovalori sono positivi)
 - $R$ è una matrice triangolare superiore tale che $A = R^T R$
 
@@ -34,7 +34,7 @@ Poiché il nostro caso si concentra su matrici sparse di dimensioni variabili, u
 $ [R, "flag", p] = "chol"(A, '"vector"') $
 
 
-Dove: 
+Dove:
 - $A$ è una matrice simmetrica definita positiva
 - $R$ è una matrice triangolare superiore risultante dalla fattorizzazione
 - $"flag"$ è un indicatore che assume valore 0 se la matrice è definita positiva, 1 altrimenti
@@ -63,7 +63,7 @@ I risultati dello script confermano che MATLAB si affida effettivamente a moltep
 L'output generato dallo script ha evidenziato le seguenti librerie:
 - Found: AMD version 2.2.0, May 31, 2007: approximate minimum degree ordering
 - Found: colamd version 2.5, May 5, 2006: OK.
-- Found: CHOLMOD version 1.7.0, Sept 20, 2008:  : status: OK
+- Found: CHOLMOD version 1.7.0, Sept 20, 2008:#sym.space.third: status: OK
 - UMFPACK V5.4.0 (May 20, 2009), Control:
 - SuiteSparseQR, version 1.1.0 (Sept 20, 2008)
 

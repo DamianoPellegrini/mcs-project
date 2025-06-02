@@ -5,8 +5,8 @@
 == Risultati MATLAB
 
 #let plotMATLABMatrix(data, data2, key: none, line-padding: 0) = {
-  let min = calc.inf;
-  let max = -calc.inf;
+  let min = calc.inf
+  let max = -calc.inf
 
   let osValues = (:) // data: values
 
@@ -14,7 +14,6 @@
   osValues.insert("Linux", ())
 
   for (win, lnx) in data.zip(data2) {
-
     let valLnx = getValFromDictCSV(lnx, key)
     let valWin = getValFromDictCSV(win, key)
 
@@ -25,12 +24,15 @@
     osValues.at("Linux").push(valLnx)
   }
 
+  import "../../import.typ": cetz-color-palette
   createMatricesLinePlot(
     key,
     matrices_matlab,
     osValues,
     min,
     max,
+    plotStyle: i => (a: none, ..cetz-color-palette.with(stroke: true)(i * 2)),
+    markStyle: i => (a: none, ..cetz-color-palette.with(stroke: true, fill: true)(i * 2)),
   )
 }
 
@@ -84,8 +86,8 @@ Durante l'esecuzione, due matrici hanno causato un errore interno della libreria
   caption: [Confronto utilizzo memoria tra sistemi operativi su MATLAB],
   {
     let key = csv_keys.allMem
-    let min = calc.inf;
-    let max = -calc.inf;
+    let min = calc.inf
+    let max = -calc.inf
 
     let osValues = (:) // data: values
 
@@ -97,7 +99,6 @@ Durante l'esecuzione, due matrici hanno causato un errore interno della libreria
     osValues.insert("solveMem (Lnx)", ())
 
     for (win, lnx) in matlab_win_csv_file.zip(matlab_linux_csv_file) {
-
       for key in (
         csv_keys.loadMem,
         csv_keys.decompMem,
@@ -124,7 +125,7 @@ Durante l'esecuzione, due matrici hanno causato un errore interno della libreria
       anchor: "north-west",
       anchorOffset: (0.75em, -0.5em),
     )
-  }
+  },
 )
 
 Dalla tabella emerge chiaramente che il profiler di memoria di MATLAB potrebbe non essere completamente affidabile, poiché riporta valori pari a zero per il caricamento di alcune matrici e valori anomali per la decomposizione delle matrici Apache e _G3\_Circuit_ su Linux. Questo fenomeno dei valori anomali è probabilmente dovuto alla presenza di WSL2 e all'utilizzo della libreria esterna CHOLMOD, ma dipende anche dal metodo con cui MATLAB registra l'uso della memoria. Se il profiler utilizza un approccio basato sul campionamento, allora i valori pari a zero sarebbero comprensibili.
@@ -137,8 +138,8 @@ In generale, l'uso della memoria sembra aumentare con la dimensione della matric
   caption: [Confronto tempi tra sistemi operativi su MATLAB],
   gap: 0.9em,
   {
-    let min = calc.inf;
-    let max = -calc.inf;
+    let min = calc.inf
+    let max = -calc.inf
 
     let osValues = (:) // data: values
 
@@ -150,7 +151,6 @@ In generale, l'uso della memoria sembra aumentare con la dimensione della matric
     osValues.insert("solveTime (Lnx)", ())
 
     for (win, lnx) in matlab_win_csv_file.zip(matlab_linux_csv_file) {
-
       for key in (
         csv_keys.loadTime,
         csv_keys.decompTime,
@@ -178,7 +178,7 @@ In generale, l'uso della memoria sembra aumentare con la dimensione della matric
       anchorOffset: (0.75em, -0.5em),
       customLabel: [Tempo caricamento, decomposizione e risoluzione \[$log_(10)(s)$\]],
     )
-  }
+  },
 )
 
 Analizzando i tempi separatamente, notiamo che l'unica grande differenza tra i due sistemi operativi riguarda il tempo di caricamento, significativamente più elevato in Linux. Questo è probabilmente dovuto al fatto che, su Linux, utilizziamo WSL2, il quale non ha accesso diretto all'hardware e deve operare attraverso un layer di virtualizzazione.
@@ -186,7 +186,7 @@ Analizzando i tempi separatamente, notiamo che l'unica grande differenza tra i d
 #figure(
   caption: [Confronto tempo complessivo tra sistemi operativi su MATLAB],
   gap: 0.9em,
-  plotMATLABMatrix(matlab_win_csv_file, matlab_linux_csv_file, key: csv_keys.allTime, line-padding: 0.25)
+  plotMATLABMatrix(matlab_win_csv_file, matlab_linux_csv_file, key: csv_keys.allTime, line-padding: 0.25),
 )
 
 Se osserviamo i tempi complessivi, non si nota una grande differenza tra i due sistemi operativi. Windows sembra più veloce, ma è importante considerare che il tempo di caricamento è significativamente più alto in Linux, il che contribuisce a un tempo complessivo maggiore.
@@ -196,7 +196,7 @@ Se osserviamo i tempi complessivi, non si nota una grande differenza tra i due s
 #figure(
   caption: [Confronto errore relativo tra sistemi operativi su MATLAB],
   gap: 0.9em,
-  plotMATLABMatrix(matlab_win_csv_file, matlab_linux_csv_file, key: csv_keys.relErr, line-padding: 0.5)
+  plotMATLABMatrix(matlab_win_csv_file, matlab_linux_csv_file, key: csv_keys.relErr, line-padding: 0.5),
 )
 
 Osservando l'errore, notiamo che è identico su entrambe le piattaforme, quindi in MATLAB non si riscontra alcuna differenza tra i due sistemi operativi. Questo è comprensibile, dato che vengono utilizzate la stessa libreria CHOLMOD e la stessa libreria BLAS.

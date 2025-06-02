@@ -10,7 +10,7 @@
     "Sanvito Marco 886493",
   ),
   bibliography: bibliography(style: "ieee", "citations.bib"),
-  abstract: include("chapters/abstract.typ"),
+  abstract: include "chapters/abstract.typ",
   dark: false,
   lang: "it",
   // flipped: true

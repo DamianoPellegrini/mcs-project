@@ -1,4 +1,12 @@
-#import "../../import.typ": matlab_linux_csv_file, matlab_win_csv_file, cpp_csv_file, matrices_cpp, cetz-color-palette, cetz-color-palette-8, cetz-color-palette-9
+#import "../../import.typ": (
+  matlab_linux_csv_file,
+  matlab_win_csv_file,
+  cpp_csv_file,
+  matrices_cpp,
+  cetz-color-palette,
+  cetz-color-palette-8,
+  cetz-color-palette-9,
+)
 
 #import "../../macros.typ": *
 
@@ -11,70 +19,71 @@ In primo luogo, si evidenzia che, in MATLAB, le due matrici di dimensioni maggio
 #figure(
   caption: [Confronto utilizzo memoria tra MATLAB e C++],
   {
-  let key = csv_keys.allMem
-  let min = calc.inf;
-  let max = -calc.inf;
+    let key = csv_keys.allMem
+    let min = calc.inf
+    let max = -calc.inf
 
-  let osValues = (:) // data: values
+    let osValues = (:) // data: values
 
-  osValues.insert("loadMem (MATLAB)(Win)", ())
-  osValues.insert("decompMem (MATLAB)(Win)", ())
-  osValues.insert("solveMem (MATLAB)(Win)", ())
-  osValues.insert("loadMem (MATLAB)(Lnx)", ())
-  osValues.insert("decompMem (MATLAB)(Lnx)", ())
-  osValues.insert("solveMem (MATLAB)(Lnx)", ())
-  osValues.insert("loadMem (C++)", ())
-  osValues.insert("decompMem (C++)", ())
-  osValues.insert("solveMem (C++)", ())
+    osValues.insert("loadMem (MATLAB)(Win)", ())
+    osValues.insert("decompMem (MATLAB)(Win)", ())
+    osValues.insert("solveMem (MATLAB)(Win)", ())
+    osValues.insert("loadMem (MATLAB)(Lnx)", ())
+    osValues.insert("decompMem (MATLAB)(Lnx)", ())
+    osValues.insert("solveMem (MATLAB)(Lnx)", ())
+    osValues.insert("loadMem (C++)", ())
+    osValues.insert("decompMem (C++)", ())
+    osValues.insert("solveMem (C++)", ())
 
-  for (win, lnx) in matlab_win_csv_file.zip(matlab_linux_csv_file) {
-    for key in (
-      csv_keys.loadMem,
-      csv_keys.decompMem,
-      csv_keys.solveMem,
-    ) {
-      let valWin = getValFromDictCSV(win, key)
-      let valLnx = getValFromDictCSV(lnx, key)
+    for (win, lnx) in matlab_win_csv_file.zip(matlab_linux_csv_file) {
+      for key in (
+        csv_keys.loadMem,
+        csv_keys.decompMem,
+        csv_keys.solveMem,
+      ) {
+        let valWin = getValFromDictCSV(win, key)
+        let valLnx = getValFromDictCSV(lnx, key)
 
-      min = calc.min(min, valWin, valLnx)
-      max = calc.max(max, valWin, valLnx)
+        min = calc.min(min, valWin, valLnx)
+        max = calc.max(max, valWin, valLnx)
 
-      osValues.at(key +  " (MATLAB)(Win)").push(valWin)
-      osValues.at(key +  " (MATLAB)(Lnx)").push(valLnx)
+        osValues.at(key + " (MATLAB)(Win)").push(valWin)
+        osValues.at(key + " (MATLAB)(Lnx)").push(valLnx)
+      }
     }
-  }
 
-  let cpp_memory = filter_by_os_blas(cpp_csv_file, blas: "OpenBLAS", os: "Linux")
+    let cpp_memory = filter_by_os_blas(cpp_csv_file, blas: "OpenBLAS", os: "Linux")
 
-  for it in cpp_memory {
-    for key in (
-      csv_keys.loadMem,
-      csv_keys.decompMem,
-      csv_keys.solveMem,
-    ) {
-      let val = getValFromDictCSV(it, key)
+    for it in cpp_memory {
+      for key in (
+        csv_keys.loadMem,
+        csv_keys.decompMem,
+        csv_keys.solveMem,
+      ) {
+        let val = getValFromDictCSV(it, key)
 
-      min = calc.min(min, val)
-      max = calc.max(max, val)
+        min = calc.min(min, val)
+        max = calc.max(max, val)
 
-      osValues.at(key +  " (C++)").push(val)
+        osValues.at(key + " (C++)").push(val)
+      }
     }
-  }
 
-  createMatricesLinePlot(
-    none,
-    matrices_cpp,
-    osValues,
-    min,
-    max,
-    customLabel: [Memoria caricamento, decomposizione e risoluzione \[$log_(10)(s)$\]],
-    anchorOffset: (1em, -0.5em),
-    legend: "inner-north-west",
-    anchor: "north-west",
-    plotStyle: cetz-color-palette-9.with(stroke: true),
-    markStyle: cetz-color-palette-9.with(stroke: true, fill: true),
-  )
-}) <memory_usage_compare_plot>
+    createMatricesLinePlot(
+      none,
+      matrices_cpp,
+      osValues,
+      min,
+      max,
+      customLabel: [Memoria caricamento, decomposizione e risoluzione \[$log_(10)(s)$\]],
+      anchorOffset: (1em, -0.5em),
+      legend: "inner-north-west",
+      anchor: "north-west",
+      plotStyle: cetz-color-palette-9.with(stroke: true),
+      markStyle: cetz-color-palette-9.with(stroke: true, fill: true),
+    )
+  },
+) <memory_usage_compare_plot>
 
 In primo luogo, poiché sono presenti due anomalie nelle matrici _apache2_ e _G3_circuit_ in MATLAB Linux, queste non sono state considerate nell'analisi, essendo considerate evidenti anomalie.
 
@@ -92,9 +101,18 @@ L'analisi dell'utilizzo della memoria, basata sulla @memory_usage_compare_plot, 
 
 === Tempi
 
-#let plotCompareMATLABCPP(mat_win_csv, mat_lnx_csv, cpp_csv, key: csv_keys.allTime, line-padding: 0.5, legend: "inner-south-east", anchor: "south-east", anchorOffset: (0, 0.75em)) = {
-  let min = calc.inf;
-  let max = -calc.inf;
+#let plotCompareMATLABCPP(
+  mat_win_csv,
+  mat_lnx_csv,
+  cpp_csv,
+  key: csv_keys.allTime,
+  line-padding: 0.5,
+  legend: "inner-south-east",
+  anchor: "south-east",
+  anchorOffset: (0, 0.75em),
+) = {
+  let min = calc.inf
+  let max = -calc.inf
 
   let osValues = (:) // data: values
 
@@ -148,28 +166,53 @@ L'analisi dell'utilizzo della memoria, basata sulla @memory_usage_compare_plot, 
 #figure(
   caption: [Confronto tempo caricamento tra MATLAB e C++],
   gap: 0.9em,
-  plotCompareMATLABCPP(matlab_win_csv_file, matlab_linux_csv_file, cpp_csv_file, key: csv_keys.loadTime, line-padding: 0.25, anchorOffset: (0, 0.25em))
+  plotCompareMATLABCPP(
+    matlab_win_csv_file,
+    matlab_linux_csv_file,
+    cpp_csv_file,
+    key: csv_keys.loadTime,
+    line-padding: 0.25,
+    anchorOffset: (0, 0.25em),
+  ),
 ) <load_time_compare_plot>
 
 #figure(
   caption: [Confronto tempo decomposizione tra MATLAB e C++],
   gap: 0.9em,
-  plotCompareMATLABCPP(matlab_win_csv_file, matlab_linux_csv_file, cpp_csv_file,
-  key: csv_keys.decompTime, line-padding: 0.25)
+  plotCompareMATLABCPP(
+    matlab_win_csv_file,
+    matlab_linux_csv_file,
+    cpp_csv_file,
+    key: csv_keys.decompTime,
+    line-padding: 0.25,
+  ),
 ) <decomp_time_compare_plot>
 
 #figure(
   caption: [Confronto tempo risoluzione tra MATLAB e C++],
   gap: 0.9em,
-  plotCompareMATLABCPP(matlab_win_csv_file, matlab_linux_csv_file, cpp_csv_file,
-  key: csv_keys.solveTime, line-padding: 0.25, legend: "inner-north-west", anchor: "north-west", anchorOffset: (0.75em, 0) )
+  plotCompareMATLABCPP(
+    matlab_win_csv_file,
+    matlab_linux_csv_file,
+    cpp_csv_file,
+    key: csv_keys.solveTime,
+    line-padding: 0.25,
+    legend: "inner-north-west",
+    anchor: "north-west",
+    anchorOffset: (0.75em, 0),
+  ),
 ) <solve_time_compare_plot>
 
 #figure(
   caption: [Confronto tempo complessivo tra MATLAB e C++],
   gap: 0.9em,
-  plotCompareMATLABCPP(matlab_win_csv_file, matlab_linux_csv_file, cpp_csv_file,
-  key: csv_keys.allTime, line-padding: 0.25)
+  plotCompareMATLABCPP(
+    matlab_win_csv_file,
+    matlab_linux_csv_file,
+    cpp_csv_file,
+    key: csv_keys.allTime,
+    line-padding: 0.25,
+  ),
 ) <total_time_compare_plot>
 
 L'analisi del tempo di esecuzione basandoci su @load_time_compare_plot, @decomp_time_compare_plot, @solve_time_compare_plot e @total_time_compare_plot evidenzia alcuni aspetti chiave:
@@ -189,8 +232,16 @@ L'analisi del tempo di esecuzione basandoci su @load_time_compare_plot, @decomp_
 #figure(
   caption: [Confronto errore relativo tra MATLAB e C++],
   gap: 0.9em,
-  plotCompareMATLABCPP(matlab_win_csv_file, matlab_linux_csv_file, cpp_csv_file, key: csv_keys.relErr, line-padding: 0.25,
-  legend: "inner-north-west", anchor: "north-west", anchorOffset: (6.5em, 0))
+  plotCompareMATLABCPP(
+    matlab_win_csv_file,
+    matlab_linux_csv_file,
+    cpp_csv_file,
+    key: csv_keys.relErr,
+    line-padding: 0.25,
+    legend: "inner-north-west",
+    anchor: "north-west",
+    anchorOffset: (6.5em, 0),
+  ),
 ) <rel_err_compare_plot>
 
 L'analisi dell'errore relativo illustrata in @rel_err_compare_plot evidenzia come la precisione numerica vari in base alle librerie e all'ambiente di esecuzione:
