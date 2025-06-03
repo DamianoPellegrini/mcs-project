@@ -9,7 +9,7 @@
     "Pellegrini Damiano 886261",
     "Sanvito Marco 886493",
   ),
-  bibliography: bibliography(style: "ieee", "citations.bib"),
+  bibliography: bibliography(style: "ieee", full: true, "citations.bib"),
   abstract: include "chapters/abstract.typ",
   dark: false,
   lang: "it",
