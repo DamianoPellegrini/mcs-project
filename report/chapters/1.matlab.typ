@@ -81,7 +81,9 @@ version('-blas') version('-lapack')
 
 I risultati ottenuti sono i seguenti (la versione potrebbe variare a seconda della release di MATLAB):
 
-ans = 'Intel(R) oneAPI Math Kernel Library Version 2024.1-Product Build 20240215\ for Intel(R) 64 architecture applications (CNR branch AVX2)' ans = 'Intel(R) oneAPI Math Kernel Library Version 2024.1-Product Build 20240215\ for Intel(R) 64 architecture applications (CNR branch AVX2) supporting Linear Algebra PACKage (LAPACK 3.11.0)'
+ans = 'Intel(R) oneAPI Math Kernel Library Version 2024.1-Product Build 20240215\ for Intel(R) 64 architecture applications (CNR branch AVX2)'
+
+ans = 'Intel(R) oneAPI Math Kernel Library Version 2024.1-Product Build 20240215\ for Intel(R) 64 architecture applications (CNR branch AVX2) supporting Linear Algebra PACKage (LAPACK 3.11.0)'
 
 
 Dato che Intel MKL e Apple Accelerate sono librerie commerciali, abbiamo deciso di fare non solo un confronto tra MATLAB e Open Source, ma anche di analizzare le differenze tra le varie implementazioni di BLAS e LAPACK.

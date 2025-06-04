@@ -98,7 +98,7 @@
   set outline(depth: 3, indent: 1em)
 
   // Style paragraph
-  set par(spacing: .75em, leading: 0.58em, justify: false)
+  set par(spacing: 1.25em, leading: 0.58em, justify: false)
 
   // Style headings
   set heading(numbering: "1.1.1.")

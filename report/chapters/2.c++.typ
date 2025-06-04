@@ -238,8 +238,11 @@ Per integrare efficacemente le librerie C++ nel nostro progetto, abbiamo dovuto 
 La documentazione di Eigen rappresenta un eccellente esempio di riferimento tecnico per progetti open-source:
 
 *Completezza:* Tutorial dettagliati, guida per le classi e documentazione delle API generata con Doxygen.
-Esempi: Numerosi esempi di codice che coprono tutti i moduli principali.
+
+*Esempi:* Numerosi esempi di codice che coprono tutti i moduli principali.
+
 *Integrazione:* Essendo header-only, l'integrazione richiede solo l'inclusione dei file header senza necessità di linking. Tuttavia, è necessario effettuare il linking di eventuali librerie esterne utilizzate in Eigen (nel nostro caso SuiteSparse).
+
 *Moduli esterni:* La documentazione sul modulo CholmodSupport è più limitata rispetto ai moduli principali, richiedendo talvolta la consultazione del codice sorgente.
 
 L'integrazione di Eigen nel progetto è stata generalmente agevole grazie alla semplicità del modello header-only e ai chiari esempi disponibili nella documentazione ufficiale.
@@ -249,8 +252,11 @@ L'integrazione di Eigen nel progetto è stata generalmente agevole grazie alla s
 La documentazione di SuiteSparse, e in particolare di CHOLMOD, presenta caratteristiche distintive:
 
 *Documentazione scientifica:* Articoli accademici dettagliati che descrivono gli algoritmi implementati.
+
 *Documentazione tecnica:* File README e documentazione interna al codice che descrivono l'API C.
+
 *Limitazioni:* Minore enfasi sugli esempi di integrazione in progetti C++ moderni.
+
 *Build system:* Documentazione limitata sull'integrazione con sistemi di build.
 
 Nonostante l'eccellente documentazione degli algoritmi sottostanti, l'integrazione di SuiteSparse ha richiesto maggiore impegno, specialmente per configurare correttamente le dipendenze tra i vari componenti. @SuiteSparse
@@ -260,7 +266,9 @@ Nonostante l'eccellente documentazione degli algoritmi sottostanti, l'integrazio
 La libreria Fast Matrix Market offre una documentazione concisa ma efficace:
 
 *GitHub README:* Documenta chiaramente l'API principale e i casi d'uso comuni.
+
 *Esempi:* Include esempi di integrazione con Eigen che hanno facilitato significativamente l'adozione.
+
 *Integrazione CMake:* Fornisce configurazioni CMake moderne con supporto per find_package.
 
 L'integrazione di Fast Matrix Market è stata notevolmente semplice grazie alla documentazione mirata e agli esempi pratici, permettendo una rapida implementazione della lettura di matrici sparse in formato MTX.
