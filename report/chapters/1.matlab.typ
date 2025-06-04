@@ -50,7 +50,7 @@ $ R^T R = A(p,p) $
 
 dove $p$ rappresenta il vettore di permutazione e $A(p,p)$ indica la matrice $A$ con righe e colonne riordinate secondo $p$. Questo approccio produce una fattorizzazione matematicamente equivalente ma computazionalmente molto più efficiente, con un fattore sparso $R$ che preserva maggiormente la struttura di sparsità originale.
 
-Questa implementazione consente di ridurre la complessità algoritmica da $O(n^3)$ nel caso denso a $O(n \cdot "nnz"(A))$ nel caso sparso ben ordinato, dove $"nnz"(A)$ rappresenta il numero di elementi non-zero. Questa complessità ottimizzata è ottenibile in casi favorevoli e dipende fortemente dall'efficacia del riordinamento e dalla struttura specifica della matrice.
+Questa implementazione consente di ridurre la complessità algoritmica. Questa complessità ottimizzata è ottenibile in casi favorevoli e dipende fortemente dall'efficacia del riordinamento e dalla struttura specifica della matrice. @matlab_chol
 
 === Funzione chol in MATLAB
 
@@ -58,7 +58,7 @@ Per rendere più completo il confronto ed avere una base di partenza, abbiamo de
 
 Per verificare empiricamente l'utilizzo di SuiteSparse in MATLAB, abbiamo applicato, con piccole modifiche, uno script diagnostico che identifica le librerie matematiche sottostanti e le relative versioni tramite funzioni di debug non documentate. Lo script di partenza è disponibile presso #link("https://undocumentedmatlab.com/articles/sparse-data-math-info")[undocumentedmatlab.com].
 
-I risultati dello script confermano che MATLAB si affida effettivamente a molteplici componenti della libreria SuiteSparse per le operazioni su matrici sparse.
+I risultati dello script confermano che MATLAB si affida effettivamente a molteplici componenti della libreria SuiteSparse per le operazioni su matrici sparse. @matlab_sparse_2013
 
 L'output generato dallo script ha evidenziato le seguenti librerie:
 - Found: AMD version 2.2.0, May 31, 2007: approximate minimum degree ordering
@@ -104,7 +104,7 @@ Utilizzo di memoria:
 
 Per il calcolo della memoria, abbiamo utilizzato una funzionalità del profiler di MATLAB non documentata, che permette di calcolare la memoria utilizzata in una porzione di codice. Ovviamente, essendo non documentata, non è garantita la sua stabilità e correttezza, ma l'abbiamo ritenuto il metodo migliore per il calcolo la memoria utilizzata.
 
-Per utilizzare questa funzionalità, abbiamo usato il comando $"profile -memory on"$ che avvisa il profiler di tenere traccia della memoria utilizzata.
+Per utilizzare questa funzionalità, abbiamo usato il comando $"profile -memory on"$ che avvisa il profiler di tenere traccia della memoria utilizzata. @matlab_undocumented_2009
 
 Accuratezza:
 - *Errore Relativo:* errore relativo della soluzione calcolata rispetto alla soluzione attesa

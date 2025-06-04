@@ -166,7 +166,12 @@
       y-grid: true,
       {
         for (label, values) in data {
-          plot.add(values.enumerate(), mark: "o", label: label)
+          plot.add(
+            values.enumerate(),
+            mark: "o",
+            label: label,
+            mark-size: .125
+          )
         }
       },
     )

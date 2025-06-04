@@ -14,6 +14,10 @@ Si può quindi concludere che, se l'obiettivo è risolvere sistemi lineari spars
 
 In definitiva, la scelta tra software proprietario e open-source dipende dalle esigenze specifiche: MATLAB garantisce un ambiente integrato e una facilità d'uso indiscutibile, mentre C++ con Eigen e CHOLMOD offre maggiore flessibilità e scalabilità su hardware moderno. Per applicazioni che richiedono prestazioni elevate su matrici di grandi dimensioni, un'implementazione open-source si dimostra non solo una valida alternativa, ma anche quella che potremmo considerare stato dell'arte, consentendo ottimizzazioni avanzate e un controllo diretto sull'allocazione della memoria e sui metodi di decomposizione utilizzati.
 
+È importante sottolineare che, per gli utenti già integrati nell'ecosistema MATLAB che desiderano comunque beneficiare degli ultimi aggiornamenti delle librerie, esiste una soluzione intermedia. È infatti possibile compilare manualmente le versioni più recenti di SuiteSparse e integrarle in MATLAB seguendo la guida disponibile su GitHub, sostituendo così le versioni obsolete incluse nel software.
+
+Analogamente, MATLAB consente di sostituire le librerie BLAS e LAPACK predefinite con implementazioni personalizzate o più aggiornate, come OpenBLAS. Questo approccio ibrido permette di mantenere i vantaggi dell'ambiente MATLAB in termini di facilità d'uso e strumenti di visualizzazione, mitigando al contempo le limitazioni derivanti dall'utilizzo di librerie obsolete. In questo modo, si ottiene un compromesso valido per chi non può o non desidera abbandonare completamente l'ambiente proprietario.
+
 == Approfondimenti futuri
 
 Per approfondire lo sviluppo di un software ad-hoc per la risoluzione di tali problematiche, si potrebbero valutare tecniche di parallelizzazione massiva tramite acceleratori hardware dedicati e tecniche di programmazione parallela tramite GPGPU. Un esempio significativo di come uno sviluppo simile possa rivelarsi vantaggioso è rappresentato dal recente sviluppo dell'Intelligenza Artificiale e dalla conseguente creazione di acceleratori hardware dedicati (TPU).

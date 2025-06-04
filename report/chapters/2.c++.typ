@@ -14,6 +14,25 @@ Nel contesto della fattorizzazione di Cholesky, C++ ci permette di:
 - Controllare precisamente l'allocazione della memoria
 - Accesso al codice sorgente delle librerie per ottimizzazioni specifiche
 
+== Tentativo iniziale con Rust
+
+Prima di procedere con l'implementazione in C++, abbiamo esplorato la possibilità di utilizzare Rust, un linguaggio moderno che offre garanzie di sicurezza della memoria senza compromettere le prestazioni. Tuttavia, questa strada è stata abbandonata per diverse ragioni tecniche.
+
+=== Limitazioni delle librerie Rust per algebra lineare
+
+L'ecosistema Rust per il calcolo scientifico, sebbene in rapida evoluzione, ha mostrato significative carenze:
+
+- *Librerie immature*: significative carenze:
+I crate come `nalgebra` e `sprs` offrono funzionalità di base per l'algebra lineare, ma mancano di implementazioni ottimizzate per operazioni su matrici sparse di grandi dimensioni.
+  
+- *Mancanza di algoritmi avanzati*: In particolare, non abbiamo trovato implementazioni robuste della fattorizzazione di Cholesky per matrici sparse che includessero tecniche di riduzione del fill-in.
+
+La mancanza di algoritmi per la riduzione del fill-in è risultata particolarmente critica, poiché questo aspetto è fondamentale per l'efficienza della fattorizzazione di Cholesky su matrici sparse. Senza tali ottimizzazioni, l'utilizzo di memoria e i tempi di calcolo sarebbero stati proibitivi per le matrici di test più grandi.
+
+Questa esperienza ha evidenziato come, nonostante i vantaggi in termini di sicurezza offerti da Rust, l'ecosistema C++ rimanga ancora dominante per applicazioni di calcolo scientifico avanzato che richiedono algoritmi specializzati e altamente ottimizzati.
+
+L'unica eccezione è russell, una libreria di binding di SuiteSparse per Rust, che però non abbiamo esplorato perché non pubblicizzata e scoperta troppo tardi.
+
 == Tool Chain C++
 
 Per lo sviluppo del nostro progetto abbiamo utilizzato diversi strumenti in base all'ambiente operativo:
@@ -59,9 +78,11 @@ CHOLMOD offre prestazioni superiori rispetto altre implementazioni per matrici d
 - Supporto per calcoli multithreaded che sfruttano processori multi-core
 - Gestione ottimizzata della memoria che riduce il sovraccarico per matrici molto sparse
 
+Inoltre, un aspetto che non abbiamo esplorato è la disponibilità di diversi binding di questa libreria per altri linguaggi di programmazione, come Python, Julia, Rust e JavaScript, che ne facilitano l'integrazione. È inoltre possibile compilare la libreria per poi utilizzarla in MATLAB.
+
 === Eigen
 Eigen è una libreria C++ header-only di algebra lineare ad alte prestazioni, completamente sviluppata in template
-per massimizzare l'ottimizzazione in fase di compilazione, con licenza MPL2.
+per massimizzare l'ottimizzazione in fase di compilazione, con licenza MPL2. @eigen
 
 Una caratteristica distintiva di Eigen è la sua architettura estensibile che permette
 l'integrazione con diverse librerie esterne specializzate. Nel nostro progetto,
@@ -163,9 +184,9 @@ auto duration =
 
 Utilizzo di memoria:
 
-- loadMem: memoria utilizzata per caricare la matrice (Bytes)
-- decompMem: memoria utilizzata per la fattorizzazione (Bytes)
-- solveMem: memoria utilizzata per trovare la soluzione (Bytes)
+- *loadMem:* memoria utilizzata per caricare la matrice (Bytes)
+- *decompMem:* memoria utilizzata per la fattorizzazione (Bytes)
+- *solveMem:* memoria utilizzata per trovare la soluzione (Bytes)
 
 Il calcolo della memoria per le operazioni di caricamento della matrice è stato implementato manualmente, considerando:
 
@@ -186,11 +207,15 @@ auto operationMem = solver.cholmod().memory_allocated;
 
 Accuratezza:
 
-- Errore Relativo: errore relativo della soluzione calcolata rispetto alla soluzione attesa
+- *Errore Relativo:* errore relativo della soluzione calcolata rispetto alla soluzione attesa
 
-Per ridurre l'errore nel calcolo dell'errore evitando il calcolo una delle due radici, abbiamo ricavato la seguente formula: $ sqrt((norm(x - x_e)^2) / (norm(x)^2)) = (norm(x - x_e)_2) / (norm(x)_2) $
+Per ridurre l'errore nel calcolo dell'errore evitando il calcolo una delle due radici, abbiamo ricavato la seguente formula: $ sqrt((norm(x - x_e)^2) / (norm(x_e)^2)) = (norm(x - x_e)_2) / (norm(x_e)_2) $
 
-Dove dato $ (norm(x - x_e)_2) / (norm(x)_2) = (sqrt((x - x_e) dot (x - x_e))) / (sqrt(x dot x)) $ con $dot$ prodotto scalare tra vettori, ho che $ (norm(x - x_e)^2) / (norm(x)^2) = ((x - x_e) dot (x - x_e)) / (x dot x) $ ovvero le somme delle componenti del vettore al quadrato.
+Dove dato $ (norm(x - x_e)_2) / (norm(x_e)_2) = (sqrt((x - x_e) dot (x - x_e))) / (sqrt(x_e dot x_e)) $ con $dot$ prodotto scalare tra vettori, ho che $ (norm(x - x_e)^2) / (norm(x_e)^2) = ((x - x_e) dot (x - x_e)) / (x_e dot x_e) $ ovvero le somme delle componenti del vettore al quadrato.
+
+=== Metodologia
+
+La metodologia è la stessa di MATLAB, con l'unica differenza che il caricamento della matrice avviene non in formato MATLAB, ma in formato Matrix Market (MTX) tramite la libreria Fast Matrix Market.
 
 === Implementazione della fattorizzazione di Cholesky
 
@@ -212,43 +237,47 @@ Per integrare efficacemente le librerie C++ nel nostro progetto, abbiamo dovuto 
 
 La documentazione di Eigen rappresenta un eccellente esempio di riferimento tecnico per progetti open-source:
 
-Completezza: Tutorial dettagliati, guida per le classi e documentazione delle API generata con Doxygen.
+*Completezza:* Tutorial dettagliati, guida per le classi e documentazione delle API generata con Doxygen.
 Esempi: Numerosi esempi di codice che coprono tutti i moduli principali.
-Integrazione: Essendo header-only, l'integrazione richiede solo l'inclusione dei file header senza necessità di linking.
-Moduli esterni: La documentazione sul modulo CholmodSupport è più limitata rispetto ai moduli principali, richiedendo talvolta la consultazione del codice sorgente.
+*Integrazione:* Essendo header-only, l'integrazione richiede solo l'inclusione dei file header senza necessità di linking. Tuttavia, è necessario effettuare il linking di eventuali librerie esterne utilizzate in Eigen (nel nostro caso SuiteSparse).
+*Moduli esterni:* La documentazione sul modulo CholmodSupport è più limitata rispetto ai moduli principali, richiedendo talvolta la consultazione del codice sorgente.
+
 L'integrazione di Eigen nel progetto è stata generalmente agevole grazie alla semplicità del modello header-only e ai chiari esempi disponibili nella documentazione ufficiale.
 
 === SuiteSparse
 
 La documentazione di SuiteSparse, e in particolare di CHOLMOD, presenta caratteristiche distintive:
 
-Documentazione scientifica: Articoli accademici dettagliati che descrivono gli algoritmi implementati.
-Documentazione tecnica: File README e documentazione interna al codice che descrivono l'API C.
-Limitazioni: Minore enfasi sugli esempi di integrazione in progetti C++ moderni.
-Build system: Documentazione limitata sull'integrazione con sistemi di build.
+*Documentazione scientifica:* Articoli accademici dettagliati che descrivono gli algoritmi implementati.
+*Documentazione tecnica:* File README e documentazione interna al codice che descrivono l'API C.
+*Limitazioni:* Minore enfasi sugli esempi di integrazione in progetti C++ moderni.
+*Build system:* Documentazione limitata sull'integrazione con sistemi di build.
+
 Nonostante l'eccellente documentazione degli algoritmi sottostanti, l'integrazione di SuiteSparse ha richiesto maggiore impegno, specialmente per configurare correttamente le dipendenze tra i vari componenti. @SuiteSparse
 
 === Fast Matrix Market
 
 La libreria Fast Matrix Market offre una documentazione concisa ma efficace:
 
-GitHub README: Documenta chiaramente l'API principale e i casi d'uso comuni.
-Esempi: Include esempi di integrazione con Eigen che hanno facilitato significativamente l'adozione.
-Integrazione CMake: Fornisce configurazioni CMake moderne con supporto per find_package.
+*GitHub README:* Documenta chiaramente l'API principale e i casi d'uso comuni.
+*Esempi:* Include esempi di integrazione con Eigen che hanno facilitato significativamente l'adozione.
+*Integrazione CMake:* Fornisce configurazioni CMake moderne con supporto per find_package.
+
 L'integrazione di Fast Matrix Market è stata notevolmente semplice grazie alla documentazione mirata e agli esempi pratici, permettendo una rapida implementazione della lettura di matrici sparse in formato MTX.
 
 === Librerie BLAS e LAPACK
 
 Le sfide più significative nel progetto sono emerse dall'integrazione delle implementazioni BLAS e LAPACK:
 
-Documentazione frammentata: Ogni implementazione (Intel MKL, OpenBLAS, Accelerate) presenta una propria documentazione con convenzioni e approcci di configurazione diversi, ma questo non ha rappresentato il problema principale.
+*Documentazione frammentata:* Ogni implementazione (Intel MKL, OpenBLAS, Accelerate) presenta una propria documentazione con convenzioni e approcci di configurazione diversi, ma questo non ha rappresentato il problema principale.
 
-Difficoltà CMake: Abbiamo riscontrato notevoli difficoltà nell'integrazione attraverso CMake:
+*Difficoltà CMake:* Abbiamo riscontrato notevoli difficoltà nell'integrazione attraverso CMake:
 
-Mancanza di moduli CMake aggiornati per il rilevamento delle diverse implementazioni, rendendo inefficaci i moduli standard come FindBLAS e FindLAPACK.
-Necessità di linkare manualmente le librerie specificando esattamente i percorsi e i componenti richiesti, invece di poter utilizzare i meccanismi automatizzati di CMake.
-Configurazioni diverse richieste per Windows (MKL/MSVC) e Linux (OpenBLAS/GCC).
-Conflitti di simboli: In alcuni casi, quali l'utilizzo dell'interfaccia standard ILP64 LAPACK 3.11.0 dell'implementazione di Apple Accelerate ha causato conflitti di simboli difficili da risolvere.
+- Mancanza di moduli CMake aggiornati per il rilevamento delle diverse implementazioni, rendendo inefficaci i moduli standard come FindBLAS e FindLAPACK.
+- Necessità di linkare manualmente le librerie specificando esattamente i percorsi e i componenti richiesti, invece di poter utilizzare i meccanismi automatizzati di CMake.
+- Configurazioni diverse richieste per Windows (MKL/MSVC) e Linux (OpenBLAS/GCC).
+
+*Conflitti di simboli:* In alcuni casi, quali l'utilizzo dell'interfaccia standard ILP64 LAPACK 3.11.0 dell'implementazione di Apple Accelerate ha causato conflitti di simboli difficili da risolvere. Di conseguenza,  è stati necessario adottare la versione LP64 sia per OpenBLAS che per Accelerate in MacOS.
 
 === Conclusioni
 

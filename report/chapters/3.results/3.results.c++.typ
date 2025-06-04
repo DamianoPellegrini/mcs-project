@@ -163,6 +163,8 @@ Dall'analisi della memoria, emerge che l'utilizzo maggiore si verifica durante l
 
 === Tempi
 
+Il tempo di caricamento è stato calcolato come media dei tempi di caricamento dei diversi BLAS, poiché non è influenzato dalla presenza di un BLAS specifico.
+
 #figure(
   caption: [Confronto tempo di caricamento tra sistemi operativi su C++],
   gap: 0.9em,
