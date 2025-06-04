@@ -172,16 +172,16 @@ int solveMatrixMarket(const std::filesystem::path& path) {
   std::cerr << std::format("Decomposition succeeded with in {} ms and {} bytes", decompTime, decompMem) << std::endl;
   csv_file << std::format("{},{},{},", decompTime, decompMem, decompPeakMem);  
 
-  Eigen::VectorXd b(A.rows()), x(A.rows()), xe(A.rows());
-  x.setOnes();
-  b = A * x;
+  Eigen::VectorXd b(A.rows()), xe(A.rows()), x(A.rows());
+  xe.setOnes();
+  b = A * xe;
 
   solver.cholmod().memory_allocated = 0;
   solver.cholmod().memory_inuse = 0;
   solver.cholmod().memory_usage = 0;
   std::cerr << std::format("Solving matrix...") << std::endl;
   start = std::chrono::high_resolution_clock::now();
-  xe = solver.solve(b);
+  x = solver.solve(b);
   end = std::chrono::high_resolution_clock::now();
 
   const auto solveTime = std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(end - start).count();
@@ -199,7 +199,7 @@ int solveMatrixMarket(const std::filesystem::path& path) {
   }
 
   // Valutazione dell'errore
-  auto err = sqrt((x - xe).squaredNorm() / x.squaredNorm());
+  auto err = sqrt((x-xe).squaredNorm() / xe.squaredNorm());
   csv_file << std::format("{}", err) << std::endl;
 
   std::cerr << std::format("Error: {}", err) << std::endl;
