@@ -40,9 +40,10 @@ Inserisci le matrici da analizzare in una cartella chiamata matrices nella root 
 
 1. **Intel MKL**
    - Installa seguendo la [guida di installazione ufficiale](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html)
-   
+
 2. **OpenBLAS (64-bit)**
    - Installa utilizzando il gestore pacchetti:
+
      ```bash
      # Ubuntu/Debian
      sudo apt-get install libopenblas64-dev
@@ -56,8 +57,9 @@ Inserisci le matrici da analizzare in una cartella chiamata matrices nella root 
 
 1. **OpenBLAS**
    - Installa utilizzando Homebrew:
+
      ```bash
-     brew install openblas
+     brew install openblas libomp
      ```
 
 2. Installa i pacchetti per la compilazione C, C++ e Fortran assieme agli strumenti di build di cmake e make
