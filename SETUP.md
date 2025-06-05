@@ -20,6 +20,8 @@ Per generare il report, è necessario scaricare l'estensione TinyMist per VS Cod
 
 Inserisci le matrici da analizzare in una cartella chiamata matrices nella root del progetto
 
+Scarica e attiva i git submodules
+
 ## Windows
 
 1. **Intel MKL**
