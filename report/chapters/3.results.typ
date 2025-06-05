@@ -23,7 +23,7 @@ Processore, Architettura, RAM, Archiviazione e Scheda Grafica sono gli stessi de
 - *Memoria Virtuale*: 40448 MB su SSD Esterno
 - *Sistema operativo Linux*: WSL 2 con Ubuntu 25.04
 
-La memoria virtuale era possibile averla solo su un solo disco, quindi è stata scelta (per mancanza di spazio) quella dell'SSD esterno.
+La memoria virtuale è possibile averla solo su un singolo disco, quindi è stata scelto (per mancanza di spazio) l'SSD esterno.
 
 Specifiche del sistema per MacOS:
 

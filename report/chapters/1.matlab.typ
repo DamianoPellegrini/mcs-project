@@ -1,3 +1,8 @@
+#import "../packages.typ": unify.unit, codly, codly-languages
+
+#show: codly.codly-init
+#codly.codly(languages: codly-languages.codly-languages, breakable: true)
+
 = Matlab
 
 == Introduzione a MATLAB
@@ -19,7 +24,9 @@ La sintassi di MATLAB è intuitiva e orientata alla risoluzione di problemi mate
 
 MATLAB implementa la fattorizzazione di Cholesky attraverso la funzione built-in $"chol"$, specificamente progettata per determinare la decomposizione di Cholesky di una matrice simmetrica definita positiva. La funzione $"chol"$ offre diverse varianti sintattiche per adattarsi a esigenze computazionali specifiche, di cui la principale è:
 
-$ R = "chol"(A) $
+```matlab
+R = chol(A)
+```
 
 Dove:
 - $A$ è una matrice simmetrica definita positiva (ovvero una matrice per cui tutti gli autovalori sono positivi)
@@ -31,8 +38,9 @@ Se A non è definita positiva, MATLAB restituisce un errore.
 
 Poiché il nostro caso si concentra su matrici sparse di dimensioni variabili, utilizzeremo la seguente sintassi:
 
-$ [R, "flag", p] = "chol"(A, '"vector"') $
-
+```matlab
+[R, flag, p] = chol(A, 'vector')
+```
 
 Dove:
 - $A$ è una matrice simmetrica definita positiva
@@ -61,11 +69,13 @@ Per verificare empiricamente l'utilizzo di SuiteSparse in MATLAB, abbiamo applic
 I risultati dello script confermano che MATLAB si affida effettivamente a molteplici componenti della libreria SuiteSparse per le operazioni su matrici sparse. @matlab_sparse_2013
 
 L'output generato dallo script ha evidenziato le seguenti librerie:
-- Found: AMD version 2.2.0, May 31, 2007: approximate minimum degree ordering
+- Found: CHOLMOD version 1.7.0, Sept 20, 2008:#sym.space.third: status: OK
 - Found: colamd version 2.5, May 5, 2006: OK.
 - Found: CHOLMOD version 1.7.0, Sept 20, 2008:#sym.space.third: status: OK
-- UMFPACK V5.4.0 (May 20, 2009), Control:
-- SuiteSparseQR, version 1.1.0 (Sept 20, 2008)
+- Found: UMFPACK V5.4.0 (May 20, 2009), Control:
+- Found: UMFPACK V5.4.0 (May 20, 2009), Control:
+- Found: CHOLMOD version 1.7.0, Sept 20, 2008:#sym.space.third: status: OK
+- Found: SuiteSparseQR, version 1.1.0 (Sept 20, 2008)
 
 === Analisi di CHOLMOD
 
@@ -77,7 +87,10 @@ Nel caso specifico di MATLAB su Windows e Linux, l'implementazione utilizzata è
 
 È possibile verificare questa configurazione attraverso i seguenti comandi MATLAB:
 
-version('-blas') version('-lapack')
+```matlab
+version('-blas')
+version('-lapack')
+```
 
 I risultati ottenuti sono i seguenti (la versione potrebbe variare a seconda della release di MATLAB):
 

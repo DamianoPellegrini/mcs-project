@@ -22,8 +22,7 @@ Prima di procedere con l'implementazione in C++, abbiamo esplorato la possibilit
 
 L'ecosistema Rust per il calcolo scientifico, sebbene in rapida evoluzione, ha mostrato significative carenze:
 
-- *Librerie immature*: significative carenze:
-I crate come `nalgebra` e `sprs` offrono funzionalità di base per l'algebra lineare, ma mancano di implementazioni ottimizzate per operazioni su matrici sparse di grandi dimensioni.
+- *Librerie immature*: I crate come `nalgebra` e `sprs` offrono funzionalità di base per l'algebra lineare, ma mancano di implementazioni ottimizzate per operazioni su matrici sparse di grandi dimensioni.
   
 - *Mancanza di algoritmi avanzati*: In particolare, non abbiamo trovato implementazioni robuste della fattorizzazione di Cholesky per matrici sparse che includessero tecniche di riduzione del fill-in.
 
