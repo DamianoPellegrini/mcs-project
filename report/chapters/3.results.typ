@@ -8,7 +8,7 @@
 
 Specifiche del sistema per Windows:
 
-- *Processore*: Intel(R) Core(TM) i7-7700HQ CPU \@ 2.80GHz 2.81 GHz
+- *Processore*: Intel(R) Core(TM) i7-7700HQ CPU \@ 2.80GHz // 2.81 GHz
 - *Architettura*: Sistema operativo a 64 bit, processore basato su x64
 - *RAM installata*: 16 GB
 - *Archiviazione*: 238 GB SSD e 1 TB SSD Esterno
@@ -27,12 +27,12 @@ La memoria virtuale è possibile averla solo su un singolo disco, quindi è stat
 
 Specifiche del sistema per MacOS:
 
-- *Processore*: Apple M1 Pro
-- *Architettura*: ARM64 (10 core)
+- *Processore*: Apple M1 Pro (10 core)
+- *Architettura*: Sistema operativo a 64 bit, processore basato su ARM64
 - *RAM installata*: 16 GB
 - *Archiviazione*: 1 TB SSD
 - *Scheda grafica*: Apple M1 Pro GPU (16 core)
-- *Memoria Virtuale*: 56 GB su SSD
+- *Memoria Virtuale*: Up to 18 Exabyte su SSD
 - *Sistema operativo*: MacOS Sonoma 15.4
 
 == Versioni delle librerie

@@ -45,7 +45,7 @@ Poiché il nostro caso si concentra su matrici sparse di dimensioni variabili, u
 Dove:
 - $A$ è una matrice simmetrica definita positiva
 - $R$ è una matrice triangolare superiore risultante dalla fattorizzazione
-- $"flag"$ è un indicatore che assume valore 0 se la matrice è definita positiva, 1 altrimenti
+- $"flag"$ è un indicatore che assume valore 0 se la matrice è definita positiva, diverso da 0 altrimenti
 - $p$ è un vettore di permutazione che ottimizza l'ordinamento delle righe e colonne di A
 
 Per le matrici sparse di grandi dimensioni, un aspetto cruciale è la gestione del _fill-in_ — fenomeno per cui elementi inizialmente nulli diventano non-zero durante la fattorizzazione, aumentando significativamente la complessità computazionale e l'utilizzo di memoria.
@@ -58,7 +58,7 @@ $ R^T R = A(p,p) $
 
 dove $p$ rappresenta il vettore di permutazione e $A(p,p)$ indica la matrice $A$ con righe e colonne riordinate secondo $p$. Questo approccio produce una fattorizzazione matematicamente equivalente ma computazionalmente molto più efficiente, con un fattore sparso $R$ che preserva maggiormente la struttura di sparsità originale.
 
-Questa implementazione consente di ridurre la complessità algoritmica. Questa complessità ottimizzata è ottenibile in casi favorevoli e dipende fortemente dall'efficacia del riordinamento e dalla struttura specifica della matrice. @matlab_chol
+Questa implementazione consente di ridurre la complessità algoritmica. Questa complessità ottimizzata è ottenibile in casi favorevoli e dipende fortemente dall'efficacia del riordinamento e dalla struttura specifica della matrice. Ulteriori informazioni sono disponibili nella documentazione di @matlab_chol.
 
 === Funzione chol in MATLAB
 
@@ -106,9 +106,9 @@ Dato che Intel MKL e Apple Accelerate sono librerie commerciali, abbiamo deciso 
 === Parametri analizzati
 
 Tempo di esecuzione:
-- *loadTime:* tempo necessario per caricare la matrice dal file in formato MATLAB (MAT) (#text(size: 0.8em)[ms])
-- *decompTime:* tempo per eseguire la fattorizzazione di Cholesky (#text(size: 0.8em)[ms])
-- *solveTime:* tempo per risolvere un sistema lineare usando i fattori (#text(size: 0.8em)[ms])
+- *loadTime:* tempo necessario per caricare la matrice dal file in formato MATLAB (MAT) (#unit("ms"))
+- *decompTime:* tempo per eseguire la fattorizzazione di Cholesky (#unit("ms"))
+- *solveTime:* tempo per risolvere un sistema lineare usando i fattori (#unit("ms"))
 
 Per il calcolo del tempo, abbiamo utilizzato il profiler di MATLAB attraverso $"profile"$, che misurano il tempo di esecuzione assieme ad altre informazioni di un blocco di codice.
 
@@ -130,11 +130,11 @@ Per ogni matrice, abbiamo eseguito i seguenti passaggi:
 
 - Caricamento della matrice in memoria da file in formato MATLAB
 - Esecuzione della fattorizzazione di Cholesky sulla matrice
-- Risoluzione del sistema lineare Ax = b
+- Risoluzione del sistema lineare $upright(A)x = b$
 - Calcolo dell'errore relativo tra la soluzione calcolata e quella attesa
 
-Per risolvere il sistema lineare $A \cdot x = b$ dove il termine b è noto ed è scelto in modo che la soluzione esatta
-sia il vettore $x_e = [1, 1, 1, 1, 1, 1, ...]$, cioè $b = A \cdot x_e$.
+Per risolvere il sistema lineare $upright(A) x = b$ dove il termine b è noto ed è scelto in modo che la soluzione esatta
+sia il vettore $x_e = [1, 1, 1, 1, 1, 1, ...]$, cioè $b = upright(A) x_e$.
 
 I risultati vengono poi esportati in un file CSV per successiva analisi e confronto con altre implementazioni.
 

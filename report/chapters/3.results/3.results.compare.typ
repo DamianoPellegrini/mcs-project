@@ -219,9 +219,9 @@ L'analisi del tempo di esecuzione basandoci su @load_time_compare_plot, @decomp_
 
 1. *Tempo di caricamento:* Le matrici più piccole, come _ex15_ e _shallow\_water1_, hanno tempi di caricamento molto ridotti, inferiori al millisecondo. Man mano che la dimensione cresce, il tempo aumenta significativamente. Per le matrici più grandi, come _Flan\_1565_, il caricamento può richiedere diversi secondi. Non è presente una differenza significativa tra C++ e MATLAB tranner per MATLAB - Linux, dove il caricamento è più lento.
 
-2. *Tempo di decomposizione:* Questa fase è la più dispendiosa in termini di tempo. Per matrici grandi come _Flan\_1565_, la decomposizione richiede oltre 100 secondi, evidenziando la complessità del processo. Però si può notare che in generale tra i diversi sistemi operativi e le librerie BLAS non ci sono differenze significative.
+2. *Tempo di decomposizione:* Questa fase è la più dispendiosa in termini di tempo. Per matrici grandi come _Flan\_1565_, la decomposizione richiede oltre 80 secondi, evidenziando la complessità del processo. Però si può notare che in generale tra i diversi sistemi operativi e le librerie BLAS non ci sono differenze significative.
 
-3. *Tempo di risoluzione:* Diversamente dalla decomposizione, la fase di risoluzione è generalmente molto più veloce. Questo avviene perché la risoluzione sfrutta la struttura fattorizzata della matrice, riducendo il numero di operazioni necessarie. Per la maggior parte delle matrici, il tempo di risoluzione è inferiore a 1 secondo, a riprova dell'efficacia dei metodi numerici impiegati, e anche qua non si nota una grossa differenza tra MATLAB e C++.
+3. *Tempo di risoluzione:* La fase di risoluzione è generalmente molto più veloce per le matrici di piccole dimensioni e prossima ai tempi di decomposizione per le matrici più grandi. Per la maggior parte delle matrici, il tempo di risoluzione è inferiore a 1 secondo, a riprova dell'efficacia dei metodi numerici impiegati, e anche qua non si nota una grossa differenza tra MATLAB e C++.
 
 4. *Tempo complessivo:* Sommando le tre fasi, emerge chiaramente che la decomposizione è il passaggio dominante in termini di costo computazionale. Ottimizzare questo processo tramite migliori algoritmi o librerie specializzate potrebbe portare a una riduzione significativa dei tempi di esecuzione, specialmente per matrici di grandi dimensioni.
 
@@ -248,7 +248,7 @@ L'analisi dell'errore relativo illustrata in @rel_err_compare_plot evidenzia com
 
 1. *Ordine di grandezza dell'errore:* In generale, l'errore relativo oscilla tra $10^(-6)$ e $10^(-16)$, fatta eccezione per macOS - Accelerate nella matrice _Flan_1565_, che presenta un errore leggermente superiore rispetto alle altre implementazioni. Non si osservano differenze significative tra i diversi sistemi operativi e le librerie BLAS.
 
-2. *Variazione tra le matrici:* Si evidenzia come non sia la dimensione della matrice a influenzare l'errore, bensì la struttura e le proprietà intrinseche della matrice stessa. Ad esempio, matrici con una maggiore densità di zeri o con una struttura peculiare possono comportare errori più elevati. Nel caso specifico, si osserva che la matrice “ex15”, la più piccola, genera un errore maggiore rispetto alle altre.
+2. *Variazione tra le matrici:* Si evidenzia come non sia la dimensione della matrice a influenzare l'errore, bensì la struttura e le proprietà intrinseche della matrice stessa. Ad esempio, matrici con una maggiore densità di zeri o con una struttura peculiare possono comportare errori più elevati. Nel caso specifico, si osserva che la matrice _ex15_, la più piccola, genera un errore maggiore rispetto alle altre.
 
 == Esito e considerazioni finali sul confronto
 

@@ -173,7 +173,7 @@ Per misurare il tempo con precisione, abbiamo utilizzato le funzionalità della 
 
 ```cpp
 auto start = std::chrono::high_resolution_clock::now();
-// Operazione da misurare
+ ... // Operazione da misurare
 auto end = std::chrono::high_resolution_clock::now();
 auto duration =
     std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -199,8 +199,8 @@ auto loadMem = valuesSize + innerIndicesSize + outerIndicesSize;
 Invece per il calcolo della memoria per le operazioni di fattorizzazione e risoluzione, abbiamo modificato parte del codice di CHOLMOD, aggiungendo un contatore per la memoria allocata. Questo contatore viene resettato prima di ogni operazione e aggiornato durante l'allocazione della memoria.
 
 ```cpp
-solver.cholmod().memory_allocated = 0;  // Reset contatore
-// Operazione da misurare
+solver.cholmod().memory_allocated = 0; // Reset contatore
+ ... // Operazione da misurare
 auto operationMem = solver.cholmod().memory_allocated;
 ```
 
@@ -208,7 +208,7 @@ Accuratezza:
 
 - *Errore Relativo:* errore relativo della soluzione calcolata rispetto alla soluzione attesa
 
-Per ridurre l'errore nel calcolo dell'errore evitando il calcolo una delle due radici, abbiamo ricavato la seguente formula: $ sqrt((norm(x - x_e)^2) / (norm(x_e)^2)) = (norm(x - x_e)_2) / (norm(x_e)_2) $
+Per ridurre l'errore nel calcolo dell'errore evitando il calcolo di una delle due radici, abbiamo ricavato la seguente formula, tramite un piccolo abuso di notazione: $ sqrt((norm(x - x_e)^2) / (norm(x_e)^2)) = (norm(x - x_e)_2) / (norm(x_e)_2) $
 
 Dove dato $ (norm(x - x_e)_2) / (norm(x_e)_2) = (sqrt((x - x_e) dot (x - x_e))) / (sqrt(x_e dot x_e)) $ con $dot$ prodotto scalare tra vettori, ho che $ (norm(x - x_e)^2) / (norm(x_e)^2) = ((x - x_e) dot (x - x_e)) / (x_e dot x_e) $ ovvero le somme delle componenti del vettore al quadrato.
 
@@ -222,7 +222,7 @@ In linea con l'approccio MATLAB, abbiamo implementato la fattorizzazione di Chol
 
 ```cpp
 Eigen::CholmodDecomposition<SparseMatrix> solver;
-solver.compute(A); // Fattorizzazione della matrice A
+solver.compute(A);    // Fattorizzazione della matrice A
 xe = solver.solve(b); // Risoluzione del sistema Ax = b
 ```
 
@@ -242,7 +242,7 @@ La documentazione di Eigen rappresenta un eccellente esempio di riferimento tecn
 
 *Integrazione:* Essendo header-only, l'integrazione richiede solo l'inclusione dei file header senza necessità di linking. Tuttavia, è necessario effettuare il linking di eventuali librerie esterne utilizzate in Eigen (nel nostro caso SuiteSparse).
 
-*Moduli esterni:* La documentazione sul modulo CholmodSupport è più limitata rispetto ai moduli principali, richiedendo talvolta la consultazione del codice sorgente.
+*Moduli esterni:* La documentazione sul modulo `CholmodSupport` è più limitata rispetto ai moduli principali, richiedendo talvolta la consultazione del codice sorgente.
 
 L'integrazione di Eigen nel progetto è stata generalmente agevole grazie alla semplicità del modello header-only e ai chiari esempi disponibili nella documentazione ufficiale.
 
