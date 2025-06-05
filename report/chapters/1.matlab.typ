@@ -133,7 +133,7 @@ Per ogni matrice, abbiamo eseguito i seguenti passaggi:
 - Risoluzione del sistema lineare $upright(A)x = b$
 - Calcolo dell'errore relativo tra la soluzione calcolata e quella attesa
 
-Per risolvere il sistema lineare $upright(A) x = b$ dove il termine b è noto ed è scelto in modo che la soluzione esatta
+Per risolvere il sistema lineare $upright(A) x = b$ dove il termine $b$ è noto ed è scelto in modo che la soluzione esatta
 sia il vettore $x_e = [1, 1, 1, 1, 1, 1, ...]$, cioè $b = upright(A) x_e$.
 
 I risultati vengono poi esportati in un file CSV per successiva analisi e confronto con altre implementazioni.
